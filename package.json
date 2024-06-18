@@ -5,21 +5,39 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
+		"app-dev": "tauri dev",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"tauri": "tauri"
+		"tauri": "tauri",
+		"tauri:build": "tauri build"
 	},
 	"dependencies": {
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
+		"@nextui-org/react": "^2.4.2",
+		"framer-motion": "^11.2.10",
+		"jquery": "^3.7.1",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"react-router-dom": "^6.23.1",
 		"@tauri-apps/api": "^1.5.2"
 	},
 	"devDependencies": {
 		"@types/react": "^18.2.15",
 		"@types/react-dom": "^18.2.7",
-		"@vitejs/plugin-react": "^4.2.1",
-		"typescript": "^5.0.2",
-		"vite": "^5.0.0",
-		"@tauri-apps/cli": "^1.5.8"
+		"@tauri-apps/cli": "^1.5.8",
+		"@types/jquery": "^3.5.30",
+		"@typescript-eslint/eslint-plugin": "^7.13.0",
+		"@typescript-eslint/parser": "^7.13.0",
+		"@vitejs/plugin-react": "^4.3.1",
+		"autoprefixer": "^10.4.19",
+		"eslint-plugin-react-hooks": "^4.6.2",
+		"eslint-plugin-react-refresh": "^0.4.7",
+		"postcss": "^8.4.38",
+		"postcss-import": "^16.1.0",
+		"sass": "^1.77.5",
+		"sass-loader": "^14.2.1",
+		"tailwindcss": "^3.4.4",
+		"typescript": "^5.4.5",
+		"vite": "^5.3.1",
+		"basic-ftp": "^5.0.5"
 	}
 }
