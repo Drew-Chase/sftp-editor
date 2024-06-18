@@ -1,6 +1,7 @@
 import React from "react";
 import {Navbar, NavbarContent, NavbarItem} from "@nextui-org/navbar";
 import {Button, Dropdown, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Kbd, NavbarMenuToggle} from "@nextui-org/react";
+import {MaximizeIcon, MinimizeIcon, XIcon} from "./Icons.tsx";
 
 
 export default function MenuBar()
@@ -8,7 +9,7 @@ export default function MenuBar()
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
     return (
-        <Navbar onMenuOpenChange={setIsMenuOpen} maxWidth={"full"} height={"32px"}>
+        <Navbar onMenuOpenChange={setIsMenuOpen} maxWidth={"full"} height={"32px"} className={"m-0"}>
             <NavbarContent>
                 <NavbarMenuToggle aria-label={isMenuOpen ? "Close menu" : "Open menu"} className="sm:hidden"/>
                 <NavbarItem>
@@ -21,6 +22,7 @@ export default function MenuBar()
                                 key={"site-browser"}
                                 shortcut={<Kbd keys={["command"]}>B</Kbd>}
                                 description={"list of saved connections"}
+                                href={"/settings/connections"}
                             >
                                 Site Browser
                             </DropdownItem>
@@ -28,6 +30,7 @@ export default function MenuBar()
                                 key={"settings"}
                                 shortcut={<Kbd keys={["command", "option"]}>S</Kbd>}
                                 description={"preferences for sftp editor"}
+                                href={"/settings"}
                             >
                                 Settings
                             </DropdownItem>
@@ -76,6 +79,7 @@ export default function MenuBar()
                             <DropdownItem
                                 key={"check-updates"}
                                 description={"more information about the app"}
+                                href={"/settings/about"}
                             >
                                 About
                             </DropdownItem>
@@ -83,6 +87,13 @@ export default function MenuBar()
                     </Dropdown>
                 </NavbarItem>
             </NavbarContent>
+            <NavbarContent className={"w-full"}></NavbarContent>
+            <NavbarContent justify={"end"} className={"gap-0"}>
+                <NavbarItem className={"m-0"}> <Button variant={"light"} size={"sm"} className={"max-w-[24px] h-6"}> <MinimizeIcon opacity={.5} size={12}/> </Button> </NavbarItem>
+                <NavbarItem className={"m-0"}> <Button variant={"light"} size={"sm"} className={"w-6 h-6"}> <MaximizeIcon opacity={.5} size={12}/> </Button> </NavbarItem>
+                <NavbarItem className={"m-0"}> <Button variant={"light"} size={"sm"} color={"danger"} className={"w-6 h-6"}> <XIcon opacity={.5} size={18}/> </Button> </NavbarItem>
+            </NavbarContent>
+
         </Navbar>
     );
 }
