@@ -30,7 +30,7 @@ function PageContent()
             <Routes>
                 <Route>
                     <Route path="/" element={<Browser/>}/>
-                    <Route path="/settings" element={<Settings/>}/>
+                    <Route path="/settings/:tab?" element={<Settings/>}/>
                 </Route>
             </Routes>
         </NextUIProvider>
