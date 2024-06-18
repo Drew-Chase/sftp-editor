@@ -1,16 +1,16 @@
 import {Switch} from "@nextui-org/react";
 import {SVGProps} from "react";
 import {JSX} from "react/jsx-runtime";
-import {applyTheme, currentTheme, themes} from "../assets/ts/Theme.ts";
+import {applyTheme, currentTheme, Themes} from "../assets/ts/Theme.ts";
 
 export default function ThemeSwitcher()
 {
     return (
-        <Switch size="sm" startContent={<SunIcon/>} endContent={<MoonIcon/>} defaultSelected={currentTheme === themes.light} onValueChange={(value) =>
+        <Switch size="md" startContent={<SunIcon/>} endContent={<MoonIcon/>} defaultSelected={currentTheme === Themes.light} onValueChange={(value) =>
         {
-            applyTheme(value ? themes.light : themes.dark);
+            applyTheme(value ? Themes.light : Themes.dark);
         }}>
-            Change Theme
+            Theme
         </Switch>
     );
 }
