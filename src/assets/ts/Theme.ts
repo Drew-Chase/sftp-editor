@@ -1,29 +1,24 @@
 import $ from "jquery";
+import {GetSettings, SaveSettings} from "./Settings.ts";
 
-export enum themes
+export enum Themes
 {
     default,
     light,
     dark
 }
 
-export function applyTheme(theme: themes = themes.default)
+export function applyTheme(theme: Themes = Themes.default)
 {
-    const name: string = theme == themes.light ? "light" : theme == themes.dark ? "dark" : (localStorage.getItem("theme") ?? "light");
-    localStorage.setItem("theme", name);
+    theme = theme === Themes.default ? GetSettings().general.darkMode ? Themes.dark : Themes.light : theme;
+    const name: string = theme == Themes.light ? "light" : "dark";
+    SaveSettings({...GetSettings(), general: {...GetSettings()?.general, darkMode: theme === Themes.dark}});
     $("html").removeClass("dark").removeClass("light").addClass(name);
 }
 
-export function getCurrentTheme(): themes
+export function getCurrentTheme(): Themes
 {
-    switch (localStorage.getItem("theme"))
-    {
-        case "light":
-            return themes.light;
-        case "dark":
-        default:
-            return themes.dark;
-    }
+    return GetSettings().general.darkMode ? Themes.dark : Themes.light;
 }
 
-export const currentTheme: themes = getCurrentTheme();
+export const currentTheme: Themes = getCurrentTheme();
