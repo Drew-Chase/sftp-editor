@@ -13,22 +13,24 @@
 	},
 	"dependencies": {
 		"@nextui-org/react": "^2.4.2",
+		"@tauri-apps/api": "^1.5.6",
+		"@tauri-apps/cli": "^1.5.8",
+		"@tauri-apps/tauri": "^0.0.1-utility.19",
 		"framer-motion": "^11.2.10",
 		"jquery": "^3.7.1",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"react-router-dom": "^6.23.1",
-		"@tauri-apps/api": "^1.5.2"
+		"react-router-dom": "^6.23.1"
 	},
 	"devDependencies": {
+		"@types/jquery": "^3.5.30",
 		"@types/react": "^18.2.15",
 		"@types/react-dom": "^18.2.7",
-		"@tauri-apps/cli": "^1.5.8",
-		"@types/jquery": "^3.5.30",
 		"@typescript-eslint/eslint-plugin": "^7.13.0",
 		"@typescript-eslint/parser": "^7.13.0",
 		"@vitejs/plugin-react": "^4.3.1",
 		"autoprefixer": "^10.4.19",
+		"basic-ftp": "^5.0.5",
 		"eslint-plugin-react-hooks": "^4.6.2",
 		"eslint-plugin-react-refresh": "^0.4.7",
 		"postcss": "^8.4.38",
@@ -37,7 +39,6 @@
 		"sass-loader": "^14.2.1",
 		"tailwindcss": "^3.4.4",
 		"typescript": "^5.4.5",
-		"vite": "^5.3.1",
-		"basic-ftp": "^5.0.5"
+		"vite": "^5.3.1"
 	}
 }
