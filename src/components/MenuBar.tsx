@@ -79,7 +79,7 @@ export default function MenuBar()
                                 Feature Request
                             </DropdownItem>
                             <DropdownItem
-                                key={"check-updates"}
+                                key={"about-app"}
                                 description={"more information about the app"}
                                 href={"/settings/about"}
                             >
