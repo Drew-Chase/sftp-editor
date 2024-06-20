@@ -10,6 +10,7 @@ import Browser from "./pages/Browser.tsx";
 import Settings from "./pages/Settings.tsx";
 import MenuBar from "./components/MenuBar.tsx";
 import {GetSettings} from "./assets/ts/Settings.ts";
+import SiteBrowser from "./pages/SiteBrowser.tsx";
 
 await GetSettings();
 applyTheme();
@@ -32,6 +33,7 @@ function PageContent()
             <Routes>
                 <Route>
                     <Route path="/" element={<Browser/>}/>
+                    <Route path="/site-browser/:tab?" element={<SiteBrowser/>}/>
                     <Route path="/settings/:tab?" element={<Settings/>}/>
                 </Route>
             </Routes>
