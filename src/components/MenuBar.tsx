@@ -24,7 +24,7 @@ export default function MenuBar()
                                 key={"site-browser"}
                                 shortcut={<Kbd keys={["command"]}>B</Kbd>}
                                 description={"list of saved connections"}
-                                href={"/settings/connections"}
+                                href={"/site-browser/new"}
                             >
                                 Site Browser
                             </DropdownItem>
