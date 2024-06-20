@@ -4,11 +4,16 @@ import {Button, Dropdown, DropdownItem, DropdownMenu, DropdownSection, DropdownT
 import {MaximizeIcon, MinimizeIcon, XIcon} from "./Icons.tsx";
 import WindowChrome from "../assets/ts/WindowChrome.ts";
 import "../assets/scss/chrome.scss";
+import ConnectionManager, {calculateTimeDifference, Connection} from "../assets/ts/ConnectionManager.ts";
 
+const manager = new ConnectionManager();
+const connections = await manager.getConnections();
+console.log(connections);
 
 export default function MenuBar()
 {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+    const byJoined: Connection[] = connections.sort((a, b) => b.last_connected_at.getTime() - a.last_connected_at.getTime()).slice(0, 3);
 
     return (
         <Navbar id={"window-chrome"} onMenuOpenChange={setIsMenuOpen} maxWidth={"full"} height={"32px"} classNames={{base: "m-0", wrapper: "px-0"}}>
@@ -37,9 +42,16 @@ export default function MenuBar()
                                 Settings
                             </DropdownItem>
                             <DropdownSection title={"Recent Connections"}>
-                                <DropdownItem key={"recent-1"}> Connection 1 </DropdownItem>
-                                <DropdownItem key={"recent-2"}> Connection 2 </DropdownItem>
-                                <DropdownItem key={"recent-3"}> Connection 3 </DropdownItem>
+                                {byJoined.map(connection =>
+                                {
+                                    return (
+                                        <DropdownItem key={connection.id}
+                                                      description={`Last joined: ${calculateTimeDifference(connection.last_connected_at)}`}
+                                        >
+                                            {connection.name}
+                                        </DropdownItem>
+                                    );
+                                })}
                             </DropdownSection>
                         </DropdownMenu>
                     </Dropdown>
