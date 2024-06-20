@@ -8,29 +8,23 @@ use tauri::Manager;
 use app_settings::{get_settings, save_settings};
 use connection_manager::{add_connection, delete_connection, get_connections, initialize, update_connection, update_join};
 
-use crate::connection_manager::Connection;
+use crate::connection_manager::create_tmp_connection;
 
 mod app_settings;
 mod connection_manager;
 
 fn main() {
-    initialize();
-    add_connection(Connection {
-        id: 0,
-        name: "test".to_string(),
-        host: "localhost".to_string(),
-        port: 22,
-        username: "test".to_string(),
-        password: "test".to_string(),
-        private_key: "".to_string(),
-        remote_path: "/".to_string(),
-        local_path: "C:/".to_string(),
-        default: true,
-        protocol: "sftp".to_string(),
-        created_at: "".to_string(),
-        updated_at: "".to_string(),
-        last_connected_at: "".to_string(),
-    });
+    match initialize() {
+        Ok(_) => (),
+        Err(e) => {
+            println!("{}", e);
+
+            // exit with error code
+            std::process::exit(1);
+        }
+    }
+    // create_tmp_connection();
+    // return;
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
