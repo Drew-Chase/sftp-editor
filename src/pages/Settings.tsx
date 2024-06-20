@@ -9,7 +9,7 @@ export default function Settings()
 {
     const tab = useParams().tab ?? "general";
     return (
-        <div className={"flex flex-row gap-3 h-full my-16 mx-4"}>
+        <div className={"flex flex-row gap-3 mt-5 mx-4 h-[100vh_!important] max-h-[calc(100vh_-_3.875rem)]"}>
             <Sidebar tab={tab}/>
             <Divider orientation={"vertical"}/>
             <SettingsContent tab={tab}/>
@@ -34,7 +34,7 @@ function Sidebar(props: { tab?: string })
 function SettingsContent(props: { tab?: string })
 {
     return (
-        <div className={"w-full"}>
+        <div className={"w-full overflow-y-auto pr-4"}>
             {((): ReactNode =>
             {
                 switch (props.tab)
