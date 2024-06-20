@@ -32,11 +32,18 @@ function PageContent()
             <MenuBar/>
             <Routes>
                 <Route>
-                    <Route path="/" element={<Browser/>}/>
-                    <Route path="/site-browser/:tab?" element={<SiteBrowser/>}/>
+                    <Route path="/" element={<Home/>}/>
+                    <Route path="/site-browser/:id?" element={<SiteBrowser/>}/>
+                    <Route path="/connection/:id?" element={<Browser/>}/>
                     <Route path="/settings/:tab?" element={<Settings/>}/>
                 </Route>
             </Routes>
         </NextUIProvider>
     );
+}
+
+function Home()
+{
+    window.location.href = "/site-browser/";
+    return (<></>);
 }
