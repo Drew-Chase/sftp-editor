@@ -1,6 +1,6 @@
-import {Autocomplete, AutocompleteItem, Button, Divider, Listbox, ListboxItem, Select, SelectItem} from "@nextui-org/react";
+import {Autocomplete, AutocompleteItem, Button, Divider, Input, Listbox, ListboxItem, Select, SelectItem} from "@nextui-org/react";
 import {useParams} from "react-router-dom";
-import ConnectionManager, {Connection} from "../assets/ts/ConnectionManager.ts";
+import ConnectionManager, {Connection, EmptyConnection} from "../assets/ts/ConnectionManager.ts";
 import {useState} from "react";
 
 const manager = new ConnectionManager();
@@ -8,12 +8,12 @@ const connections = await manager.getConnections();
 
 export default function SiteBrowser()
 {
-    const tab = useParams().tab ?? "general";
+    const tab = useParams().id ?? "general";
     return (
-        <div className={"flex flex-row gap-3 h-full mt-5 mx-4  h-[100vh] max-h-[calc(100vh_-_3.875rem)]"}>
+        <div className={"flex flex-row gap-3 mt-5 mx-4 h-[100vh] max-h-[calc(100vh_-_3.875rem)]"}>
             <Sidebar tab={tab}/>
             <Divider orientation={"vertical"}/>
-            <SiteDetails connection={connections.find(c => c.id.toString() === tab) ?? {} as Connection}/>
+            <SiteDetails connection={connections.find(c => c.id.toString() === tab) ?? EmptyConnection}/>
         </div>
     );
 }
@@ -26,7 +26,7 @@ function Sidebar(props: { tab?: string })
             <Listbox>
                 {connections.map(connection =>
                     (
-                        <ListboxItem key={connection.id} href={`/site-browser/${connection.id}`} className={`${props.tab === connection.id.toString() ? "bg-primary/75 hover:!bg-primary transition-all" : ""} py-3 my-1`}>{connection.name}{!connection.default ? (<span className={"text-danger ml-2"}>*</span>) : (<></>)}</ListboxItem>
+                        <ListboxItem key={connection.id} href={`/site-browser/${connection.id}`} className={`${props.tab === connection.id.toString() ? "bg-primary/75 hover:!bg-primary transition-all" : ""} py-3 my-1`}>{connection.name}{connection.default ? (<span className={"text-danger ml-2"}>*</span>) : (<></>)}</ListboxItem>
                     )
                 ) as any}
             </Listbox>
@@ -85,20 +85,7 @@ function SiteDetails(props: { connection: Connection })
                 }} onValueChange={value => setConnection({...connection, host: value})}>
                     {uniqueHosts.map(host => <AutocompleteItem key={host} value={host}>{host}</AutocompleteItem>)}
                 </Autocomplete>
-                <Autocomplete inputValue={connection.port.toString()} allowsCustomValue label={"Port"} description={"The port of the ftp/sftp server"} onSelectionChange={key =>
-                {
-                    if (key === "" || key === null || key === undefined)
-                        return;
-                    setConnection({...connection, port: Number.parseInt(key as string)});
-                }} onValueChange={value =>
-                {
-                    if (value === "" || value === null || value === undefined)
-                        return;
-                    value = value.replace(/[^0-9]/g, "");
-                    setConnection({...connection, port: Number.parseInt(value)});
-                }}>
-                    {uniquePorts.map(port => <AutocompleteItem key={port} value={port}>{port}</AutocompleteItem>)}
-                </Autocomplete>
+                <Input label={"Password"} type={"password"} description={"The password to use for authentication"} value={connection.password} onChange={e => setConnection({...connection, password: e.target.value})}/>
             </div>
         </div>
     );
