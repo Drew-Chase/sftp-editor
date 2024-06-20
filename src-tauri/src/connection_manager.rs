@@ -14,32 +14,68 @@ pub struct Connection {
     pub remote_path: String,
     pub local_path: String,
     pub default: bool,
-    pub protocol: String,
+    pub protocol: Protocol,
     pub created_at: String,
     pub updated_at: String,
     pub last_connected_at: String,
 }
 
+#[derive(Clone, serde::Serialize, serde::Deserialize, Debug)]
+pub enum Protocol {
+    Sftp = 0,
+    Ftp = 1,
+}
 
-pub fn initialize() {
+impl From<Protocol> for i32 {
+    fn from(protocol: Protocol) -> i32 {
+        match protocol {
+            Protocol::Sftp => 0,
+            Protocol::Ftp => 1,
+        }
+    }
+}
+
+impl From<i32> for Protocol {
+    fn from(protocol: i32) -> Protocol {
+        match protocol {
+            0 => Protocol::Sftp,
+            1 => Protocol::Ftp,
+            _ => Protocol::Sftp,
+        }
+    }
+}
+
+
+pub fn initialize() -> Result<(), String> {
     let lite = sqlite::open(get_database_path()).unwrap();
     match lite.execute(
-        "CREATE TABLE IF NOT EXISTS connections (
-                `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-                `name` TEXT NOT NULL,
-                `host` TEXT NOT NULL,
-                `port` INTEGER NOT NULL,
-                `username` TEXT NOT NULL,
-                `password` TEXT NOT NULL,
-                `private_key` TEXT NOT NULL,
-                `remote_path` TEXT NOT NULL,
-                `local_path` TEXT NOT NULL,
-                `default` BOOLEAN NOT NULL,
-                `protocol` TEXT NOT NULL DEFAULT 'sftp',
-                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                `last_connected_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        "CREATE TABLE IF NOT EXISTS `connections` (
+                'id' INTEGER PRIMARY KEY AUTOINCREMENT,
+                'name' TEXT NOT NULL,
+                'host' TEXT NOT NULL,
+                'port' INTEGER NOT NULL,
+                'username' TEXT NOT NULL,
+                'password' TEXT NOT NULL,
+                'private_key' TEXT NOT NULL,
+                'remote_path' TEXT NOT NULL,
+                'local_path' TEXT NOT NULL,
+                'default' BOOLEAN NOT NULL,
+                'protocol' TINYINT NOT NULL DEFAULT 0,
+                'created_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                'updated_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                'last_connected_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )",
+    ) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("Code: {:?}, Message: {:?}", e.code, e.message))
+    }
+}
+
+pub fn create_tmp_connection() {
+    let lite = sqlite::open(get_database_path()).unwrap();
+    match lite.execute(
+        "INSERT INTO `connections` ('name', 'host', 'port', 'username', 'password', 'private_key', 'remote_path', 'local_path', 'default', 'protocol', 'last_connected_at')
+                VALUES ('Temporary Connection', 'localhost', 22, 'root', '', '', '', '', 0, 0, '2024-06-20 10:30:13.000')",
     ) {
         Ok(_) => (),
         Err(e) => println!("{:?}", e),
@@ -51,7 +87,7 @@ pub fn add_connection(connection: Connection) {
     let lite = sqlite::open(get_database_path()).unwrap();
     match lite.execute(
         &format!(
-            "INSERT INTO connections ('name', 'host', 'port', 'username', 'password', 'private_key', 'remote_path', 'local_path', 'default', 'protocol')
+            "INSERT INTO `connections` ('name', 'host', 'port', 'username', 'password', 'private_key', 'remote_path', 'local_path', 'default', 'protocol')
                     VALUES ('{}', '{}', {}, '{}', '{}', '{}', '{}', '{}', {}, '{}')",
             connection.name,
             connection.host,
@@ -62,7 +98,7 @@ pub fn add_connection(connection: Connection) {
             connection.remote_path,
             connection.local_path,
             connection.default,
-            connection.protocol,
+            <i32 as From<Protocol>>::from(connection.protocol)
         ),
     ) {
         Ok(_) => (),
@@ -75,7 +111,7 @@ pub fn get_connections() -> Vec<Connection> {
     let mut connections = Vec::new();
     let lite = sqlite::open(get_database_path()).unwrap();
     let mut statement = lite
-        .prepare("SELECT * FROM connections")
+        .prepare("SELECT * FROM connections ORDER BY last_connected_at DESC")
         .unwrap();
 
     while let sqlite::State::Row = statement.next().unwrap() {
@@ -90,7 +126,7 @@ pub fn get_connections() -> Vec<Connection> {
             remote_path: statement.read::<String, usize>(7).unwrap(),
             local_path: statement.read::<String, usize>(8).unwrap(),
             default: statement.read::<i64, usize>(9).unwrap() != 0,
-            protocol: statement.read::<String, usize>(10).unwrap(),
+            protocol: From::from(statement.read::<i64, usize>(10).unwrap() as i32),
             created_at: statement.read::<String, usize>(11).unwrap(),
             updated_at: statement.read::<String, usize>(12).unwrap(),
             last_connected_at: statement.read::<String, usize>(13).unwrap(),
@@ -116,7 +152,7 @@ pub fn update_connection(id: i32, connection: Connection) {
             connection.remote_path,
             connection.local_path,
             connection.default,
-            connection.protocol,
+            <i32 as From<Protocol>>::from(connection.protocol),
             chrono::Local::now().to_string(),
             id
         ),
@@ -127,7 +163,7 @@ pub fn update_connection(id: i32, connection: Connection) {
 }
 
 #[tauri::command]
-pub fn update_join(id: i32, connection: Connection) {
+pub fn update_join(id: i32) {
     let lite = sqlite::open(get_database_path()).unwrap();
     match lite.execute(
         &format!(
