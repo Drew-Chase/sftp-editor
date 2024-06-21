@@ -38,7 +38,8 @@ export async function GetSettings(): Promise<AppSettings>
     return settings;
 }
 
-export function SaveSettings(settings: AppSettings)
+export async function SaveSettings(settings: AppSettings)
 {
-    invoke("save_settings", {settings: settings}).then(() => console.log("Settings saved"));
+    await invoke("save_settings", {settings: settings}).then(() => console.log("Settings saved"));
+    await GetSettings();
 }
