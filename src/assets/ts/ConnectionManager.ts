@@ -26,7 +26,7 @@ export interface Connection
 
 export const EmptyConnection: Connection = {
     id: -1,
-    name: "",
+    name: "New Connection",
     host: "",
     port: 22,
     username: "",
@@ -57,6 +57,19 @@ export default class ConnectionManager
     async addConnection(connection: Connection): Promise<void>
     {
         await invoke("add_connection", {connection});
+    }
+
+    async updateConnection(connection: Connection): Promise<void>
+    {
+        console.log("Updating connection:", connection);
+        await invoke("update_connection", {id: connection.id, connection: {...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp" }});
+        await this.getConnections();
+    }
+
+    async setDefault(connection: Connection): Promise<void>
+    {
+        await invoke("set_default", {id: connection.id});
+        await this.getConnections();
     }
 
     async removeConnection(connection: Connection): Promise<void>
