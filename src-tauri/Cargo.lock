@@ -2784,6 +2784,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
 
 [[package]]
+name = "remotefs"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8df5d94ca7480505315216544f145f358b7609781beef33a9149ecd9be44a5b"
+dependencies = [
+ "chrono",
+ "log",
+ "thiserror",
+ "wildmatch",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3006,6 +3018,7 @@ name = "sftp-editor"
 version = "0.0.0"
 dependencies = [
  "chrono",
+ "remotefs",
  "serde",
  "serde_json",
  "sqlite",
@@ -4072,6 +4085,12 @@ dependencies = [
  "windows-bindgen",
  "windows-metadata",
 ]
+
+[[package]]
+name = "wildmatch"
+version = "2.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3928939971918220fed093266b809d1ee4ec6c1a2d72692ff6876898f3b16c19"
 
 [[package]]
 name = "winapi"
