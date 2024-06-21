@@ -8,7 +8,7 @@ export default function SwitchOption(props: { label: string, description: string
             onValueChange={props.onToggle}
             classNames={{
                 base: cn(
-                    "inline-flex flex-row-reverse w-full max-w-full bg-content1 hover:bg-content2 items-center",
+                    "inline-flex flex-row-reverse w-full max-w-full bg-content1 hover:bg-content2 items-center max-h-[6rem]",
                     "justify-between cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent my-1 ",
                     "data-[selected=true]:border-primary flex-grow",
                 ),
