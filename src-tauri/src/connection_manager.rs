@@ -139,24 +139,25 @@ pub fn get_connections() -> Vec<Connection> {
 
 #[tauri::command]
 pub fn update_connection(id: i32, connection: Connection) {
+    println!("Updating '{:?}' {:?}", id, connection);
     let lite = sqlite::open(get_database_path()).unwrap();
-    match lite.execute(
-        &format!(
-            "UPDATE `connections` SET 'name' = '{}', 'host' = '{}', 'port' = {}, 'username' = '{}', 'password' = '{}', 'private_key' = '{}', 'remote_path' = '{}', 'local_path' = '{}', 'default' = {}, 'protocol' = '{}' 'updated_at'={} WHERE id = {}",
-            connection.name,
-            connection.host,
-            connection.port,
-            connection.username,
-            connection.password,
-            connection.private_key,
-            connection.remote_path,
-            connection.local_path,
-            connection.default,
-            <i32 as From<Protocol>>::from(connection.protocol),
-            chrono::Local::now().to_string(),
-            id
-        ),
-    ) {
+    let sql = &format!(
+        "UPDATE `connections` SET 'name' = '{}', 'host' = '{}', 'port' = {}, 'username' = '{}', 'password' = '{}', 'private_key' = '{}', 'remote_path' = '{}', 'local_path' = '{}', 'default' = {}, 'protocol' = {}, 'updated_at'='{}' WHERE id = {}",
+        connection.name,
+        connection.host,
+        connection.port,
+        connection.username,
+        connection.password,
+        connection.private_key,
+        connection.remote_path,
+        connection.local_path,
+        connection.default,
+        <i32 as From<Protocol>>::from(connection.protocol),
+        chrono::Local::now().to_string(),
+        id
+    );
+    println!("{}", &sql);
+    match lite.execute(&sql) {
         Ok(_) => (),
         Err(e) => println!("{:?}", e),
     }
@@ -189,6 +190,28 @@ pub fn delete_connection(id: i32) {
         Ok(_) => (),
         Err(e) => println!("{:?}", e),
     }
+}
+
+#[tauri::command]
+pub fn set_default(id:i32)
+{
+    let lite = sqlite::open(get_database_path()).unwrap();
+    match lite.execute(
+        &"UPDATE `connections` SET 'default' = 0".to_string(),
+    ) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
+    }
+    match lite.execute(
+        &format!(
+            "UPDATE `connections` SET 'default' = 1 WHERE id = {}",
+            id
+        ),
+    ) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
+    }
+
 }
 
 
