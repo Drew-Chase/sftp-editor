@@ -12,7 +12,7 @@ import MenuBar from "./components/MenuBar.tsx";
 import {GetSettings} from "./assets/ts/Settings.ts";
 import SiteBrowser from "./pages/SiteBrowser.tsx";
 
-await GetSettings();
+GetSettings();
 applyTheme();
 
 ReactDOM.createRoot($("#root")[0]!).render(
