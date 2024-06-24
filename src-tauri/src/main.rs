@@ -7,11 +7,13 @@ use tauri::Manager;
 
 use app_settings::{get_settings, save_settings};
 use connection_manager::{add_connection, delete_connection, get_connections, initialize, update_connection, update_join, set_default};
+use sftp_manager::{test_connection};
 
 use crate::connection_manager::create_tmp_connection;
 
 mod app_settings;
 mod connection_manager;
+mod sftp_manager;
 
 fn main() {
     match initialize() {
@@ -35,7 +37,8 @@ fn main() {
             delete_connection,
             update_connection,
             update_join,
-            set_default
+            set_default,
+            test_connection
 
         ])
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
