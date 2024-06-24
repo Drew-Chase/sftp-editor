@@ -19,7 +19,12 @@ tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-wo
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 sqlite = "0.36.0"
 chrono = "0.4.38"
-remotefs = "0.2.0"
+openssl = { version = "0.10.64", features = ["vendored"] }
+openssl-sys = {version =  "0.9.102", features = ["vendored"] }
+ssh2 = { version = "0.9.4", features = ["vendored-openssl"] }
+ftp-client = "0.1.2"
+async-trait = "0.1"
+reqwest = { version = "0.12.5", features = ["rustls-tls"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
