@@ -7,11 +7,12 @@ import "../assets/scss/chrome.scss";
 import ConnectionManager, {calculateTimeDifference, Connection} from "../assets/ts/ConnectionManager.ts";
 
 const manager = new ConnectionManager();
-const connections = await manager.getConnections();
-console.log(connections);
+// const connections = await manager.getConnections();
+// console.log(connections);
 
 export default function MenuBar()
 {
+    const connections = manager.connections;
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const byJoined: Connection[] = connections.sort((a, b) => b.last_connected_at.getTime() - a.last_connected_at.getTime()).slice(0, 3);
 
