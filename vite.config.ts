@@ -18,5 +18,10 @@ export default defineConfig(async () => ({
             // 3. tell vite to ignore watching `src-tauri`
             ignored: ["**/src-tauri/**"]
         }
+    },
+    esbuild: {
+        supported: {
+            "top-level-await": true //browsers can handle top-level-await features
+        }
     }
 }));
