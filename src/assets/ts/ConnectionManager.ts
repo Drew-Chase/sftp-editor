@@ -1,11 +1,13 @@
 import {invoke} from "@tauri-apps/api/tauri";
 
-export enum Protocol {
+export enum Protocol
+{
     SFTP = 0,
     FTP = 1,
 }
 
-export interface Connection {
+export interface Connection
+{
     id: number,
     name: string,
     host: string,
@@ -40,22 +42,29 @@ export const EmptyConnection: Connection = {
 };
 
 
-export default class ConnectionManager {
+export default class ConnectionManager
+{
     connections: Connection[] = [];
 
-    __constructor() {
-        this.getConnections().then((connections) => {
+    constructor()
+    {
+        this.getConnections().then((connections) =>
+        {
             console.log("Connections loaded: ", connections);
         });
     }
 
-    async addConnection(connection: Connection): Promise<void> {
 
-        await invoke("add_connection", {connection:{...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp"}});
+    async addConnection(connection: Connection): Promise<void>
+    {
+
+        await invoke("add_connection", {connection: {...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp"}});
     }
 
-    async updateConnection(connection: Connection): Promise<void> {
-        if (connection.id === EmptyConnection.id) {
+    async updateConnection(connection: Connection): Promise<void>
+    {
+        if (connection.id === EmptyConnection.id)
+        {
             console.error(`Cannot update empty connection!`, connection);
             return;
         }
@@ -64,8 +73,10 @@ export default class ConnectionManager {
         await this.getConnections();
     }
 
-    async setDefault(connection: Connection): Promise<void> {
-        if (connection.id === EmptyConnection.id) {
+    async setDefault(connection: Connection): Promise<void>
+    {
+        if (connection.id === EmptyConnection.id)
+        {
             console.error(`Cannot update empty connection!`, connection);
             return;
         }
@@ -73,17 +84,21 @@ export default class ConnectionManager {
         await this.getConnections();
     }
 
-    async removeConnection(connection: Connection): Promise<void> {
-        if (connection.id === EmptyConnection.id) {
+    async removeConnection(connection: Connection): Promise<void>
+    {
+        if (connection.id === EmptyConnection.id)
+        {
             console.error(`Cannot remove empty connection!`, connection);
             return;
         }
-        await invoke("remove_connection", {id: connection.id, connection: connection});
+        await invoke("delete_connection", {id: connection.id, connection: connection});
     }
 
-    async getConnections(): Promise<Connection[]> {
+    async getConnections(): Promise<Connection[]>
+    {
         this.connections = await invoke("get_connections") as Connection[];
-        this.connections = this.connections.map(connection => {
+        this.connections = this.connections.map(connection =>
+        {
             connection.created_at = new Date(connection.created_at);
             connection.updated_at = new Date(connection.updated_at);
             connection.last_connected_at = new Date(connection.last_connected_at);
@@ -91,9 +106,17 @@ export default class ConnectionManager {
         });
         return this.connections;
     }
+
+    async testConnection(connection: Connection): Promise<boolean>
+    {
+        const response: boolean = await invoke("test_connection", {connection: {...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp"}});
+        console.log("Test connection response: ", response);
+        return response;
+    }
 }
 
-export function calculateTimeDifference(date: Date): string {
+export function calculateTimeDifference(date: Date): string
+{
     const currentDate = new Date();
 
     const totalSeconds: number = Math.floor((currentDate.getTime() - date.getTime()) / 1000);
