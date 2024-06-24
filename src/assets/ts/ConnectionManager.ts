@@ -50,7 +50,8 @@ export default class ConnectionManager {
     }
 
     async addConnection(connection: Connection): Promise<void> {
-        await invoke("add_connection", {connection});
+
+        await invoke("add_connection", {connection:{...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp"}});
     }
 
     async updateConnection(connection: Connection): Promise<void> {
