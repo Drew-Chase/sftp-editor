@@ -33,7 +33,6 @@ export let currentSettings: AppSettings = {"general_settings": {"dark_mode": tru
 export async function GetSettings(): Promise<AppSettings>
 {
     const settings: AppSettings = await invoke("get_settings");
-    console.log("Settings Loaded", settings);
     currentSettings = settings;
     return settings;
 }
