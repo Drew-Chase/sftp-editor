@@ -1,12 +1,13 @@
-import {Autocomplete, AutocompleteItem, Button, Divider, Input, Listbox, ListboxItem, Select, SelectItem} from "@nextui-org/react";
+import {Autocomplete, AutocompleteItem, Button, Divider, Input, Listbox, ListboxItem, Select, SelectItem, Tooltip} from "@nextui-org/react";
 import {useParams} from "react-router-dom";
 import ConnectionManager, {Connection, EmptyConnection, Protocol} from "../assets/ts/ConnectionManager.ts";
 import {useState} from "react";
 import SwitchOption from "../components/SwitchSetting.tsx";
 import FileInput from "../components/FileInput.tsx";
+import {ConnectIcon, TrashIcon} from "../components/Icons.tsx";
 
 const manager = new ConnectionManager();
-await manager.getConnections();
+// await manager.getConnections();
 
 export default function SiteBrowser()
 {
@@ -30,7 +31,42 @@ function Sidebar(props: { tab?: string, onSetTab: (tab: string) => void })
             <Listbox>
                 {manager.connections.map(connection =>
                                              (
-                                                 <ListboxItem key={connection.id} href={`/site-browser/${connection.id}`} description={`${connection.username}@${connection.host}:${connection.port}`} onClick={() => props.onSetTab(connection.id.toString())} className={`${props.tab === connection.id.toString() ? "bg-primary/75 hover:!bg-primary transition-all" : ""} py-3 my-1`}>{connection.name}{connection.default ? (<span className={"text-danger ml-2"}>*</span>) : (<></>)}</ListboxItem>
+                                                 <ListboxItem
+                                                     key={connection.id}
+                                                     href={`/site-browser/${connection.id}`}
+                                                     description={`${connection.username}@${connection.host}:${connection.port}`}
+                                                     className={`${props.tab === connection.id.toString() ? "bg-primary/75 hover:!bg-primary transition-all" : ""} py-3 my-1`}
+                                                     onClick={
+                                                         () => props.onSetTab(connection.id.toString())
+                                                     }
+                                                     classNames={{
+                                                         title: "w-full",
+                                                     }}
+                                                 >
+                                                     <div className={"flex flex-row w-full flex-nowrap"}>
+                                                         <div className={"w-full flex flex-grow"}>
+                                                             {connection.name}
+                                                             {connection.default ? (<span className={"ml-2"}>*</span>) : (<></>)}
+                                                         </div>
+                                                         <div className={"flex flex-row"}>
+                                                             <Tooltip content={"Delete"}>
+                                                                 <Button variant={"light"} className={"max-w-[24px] min-w-[24px] min-h-[24px] max-h-[24px] p-0"} onClick={async e =>
+                                                                 {
+                                                                     e.stopPropagation();
+                                                                     await manager.removeConnection(connection);
+                                                                     window.location.reload();
+                                                                 }}><TrashIcon opacity={.5} size={12}/></Button>
+                                                             </Tooltip>
+                                                             <Tooltip content={"Connect"}>
+                                                                 <Button variant={"light"} className={"max-w-[24px] min-w-[24px] min-h-[24px] max-h-[24px] p-0"} onClick={async () =>
+                                                                 {
+                                                                 }}>
+                                                                     <ConnectIcon size={12} opacity={.5}/>
+                                                                 </Button>
+                                                             </Tooltip>
+                                                         </div>
+                                                     </div>
+                                                 </ListboxItem>
                                              )
                 ) as any}
             </Listbox>
@@ -51,14 +87,18 @@ function SiteDetails(props: { connection: Connection })
     const onSave = async () =>
     {
         console.log("Saving connection", connection);
+        await manager.addConnection(connection);
+        window.location.reload();
+
     };
     return (
         <div className={"flex flex-col w-full gap-3 overflow-y-auto relative pr-5 pb-10"}>
             <div className={"mb-5"}>
                 <Input classNames={{
-                    input: "text-4xl font-bold",
+                    input: "text-4xl font-bold pb-5 pt-2",
                     label: "text-lg font-bold",
-                    description: "text-sm"
+                    description: "text-sm",
+                    base: "w-full pt-2",
                 }} placeholder={isNewConnection ? "New Connection" : "Connection Name"} value={connection.name} variant={"underlined"} onValueChange={async value =>
                 {
                     const temp: Connection = {...connection, name: value};
@@ -68,6 +108,13 @@ function SiteDetails(props: { connection: Connection })
                 }}/>
                 {isNewConnection ? <Button color={"primary"} className={"fixed bottom-4 right-7 z-10"} onClick={onSave}>Add</Button> :
                     <>
+                        <div className={`flex flex-row`}>
+                            <p className={""}><span className={"opacity-30"}>Created:</span><br/><span className={"font-bold opacity-30"}>{connection.created_at.toDateString()}</span></p>
+                            <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
+                            <p className={""}><span className={"opacity-30"}>Updated:</span><br/><span className={"font-bold opacity-30"}>{connection.updated_at.toDateString()}</span></p>
+                            <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
+                            <p className={""}><span className={"opacity-30"}>Last Joined:</span><br/><span className={"font-bold opacity-30"}>{connection.last_connected_at.toDateString()}</span></p>
+                        </div>
                         <SwitchOption label={"Default"} description={"This will automatically connect on startup."} selected={connection.default} onToggle={async value =>
                         {
                             const temp: Connection = {...connection, default: value};
@@ -81,13 +128,6 @@ function SiteDetails(props: { connection: Connection })
                                 }
                             setConnection(temp);
                         }}/>
-                        <div className={`flex flex-row`}>
-                            <p className={""}><span className={"opacity-30"}>Created:</span><br/><span className={"font-bold opacity-30"}>{connection.created_at.toDateString()}</span></p>
-                            <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
-                            <p className={""}><span className={"opacity-30"}>Updated:</span><br/><span className={"font-bold opacity-30"}>{connection.updated_at.toDateString()}</span></p>
-                            <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
-                            <p className={""}><span className={"opacity-30"}>Last Joined:</span><br/><span className={"font-bold opacity-30"}>{connection.last_connected_at.toDateString()}</span></p>
-                        </div>
                     </>
                 }
             </div>
@@ -176,6 +216,7 @@ function SiteDetails(props: { connection: Connection })
                 description={"The private key to use for authentication"}
                 variant={"multiline"}
                 valueType={"contents"}
+                value={connection.private_key}
                 onChange={async content =>
                 {
                     const temp: Connection = {...connection, private_key: content};
@@ -186,16 +227,27 @@ function SiteDetails(props: { connection: Connection })
 
             <h2 className={"text-lg font-bold"}>Locations</h2>
             <div className={"flex flex-row gap-2"}>
-                <FileInput
+                {/*<FileInput*/}
+                {/*    label={"Local Path"}*/}
+                {/*    description={"The local path that will be navigated to when connected."}*/}
+                {/*    variant={"single-line"}*/}
+                {/*    valueType={"path"}*/}
+                {/*    type={"directory"}*/}
+                {/*    value={connection.local_path}*/}
+                {/*    onChange={async content =>*/}
+                {/*    {*/}
+                {/*        const temp: Connection = {...connection, local_path: content};*/}
+                {/*        if (!isNewConnection)*/}
+                {/*            await manager.updateConnection(temp);*/}
+                {/*        setConnection(temp);*/}
+                {/*    }}/>*/}
+                <Input
                     label={"Local Path"}
                     description={"The local path that will be navigated to when connected."}
-                    variant={"single-line"}
-                    valueType={"path"}
-                    type={"directory"}
                     value={connection.local_path}
-                    onChange={async content =>
+                    onValueChange={async value =>
                     {
-                        const temp: Connection = {...connection, local_path: content};
+                        const temp: Connection = {...connection, local_path: value};
                         if (!isNewConnection)
                             await manager.updateConnection(temp);
                         setConnection(temp);
