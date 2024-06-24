@@ -1,5 +1,5 @@
 import {Input, Textarea} from "@nextui-org/react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 export interface FileInputProps
 {
@@ -26,6 +26,7 @@ export interface FileInputProps
 export default function FileInput(props: FileInputProps)
 {
     const [value, setValue] = useState<string>(props.value || "");
+    useEffect(() => setValue(props.value || ""), [props.value]);
 
     const createInput = () =>
     {
@@ -45,16 +46,20 @@ export default function FileInput(props: FileInputProps)
             if (input.files !== null && input.files.length > 0)
             {
                 const file = input.files[0];
-                console.log(input.files)
                 if (props.valueType === "name")
+                {
+                    props.onChange && props.onChange(file.name);
                     setValue(file.name);
-                else if (props.valueType === "path")
+                } else if (props.valueType === "path")
+                {
+                    props.onChange && props.onChange(URL.createObjectURL(file));
                     setValue(URL.createObjectURL(file));
-                else if (props.valueType === "base64")
+                } else if (props.valueType === "base64")
                 {
                     const reader = new FileReader();
                     reader.onload = (e) =>
                     {
+                        props.onChange && props.onChange(e.target?.result as string);
                         setValue(e.target?.result as string);
                     };
                     reader.readAsDataURL(file);
@@ -63,24 +68,26 @@ export default function FileInput(props: FileInputProps)
                     const reader = new FileReader();
                     reader.onload = (e) =>
                     {
+                        props.onChange && props.onChange(e.target?.result as string);
                         setValue(e.target?.result as string);
                     };
                     reader.readAsDataURL(new Blob([file]));
                 } else if (props.valueType === "file")
                 {
+                    props.onChange && props.onChange(file.toString() as string);
                     setValue(file.toString());
                 } else if (props.valueType === "contents")
                 {
                     const reader = new FileReader();
                     reader.onload = (e) =>
                     {
+                        props.onChange && props.onChange(e.target?.result as string);
                         setValue(e.target?.result as string);
                     };
                     reader.readAsText(file);
                 }
             }
         };
-        console.log(input.outerHTML)
         input.click();
     };
     return (
