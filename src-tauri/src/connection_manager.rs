@@ -14,7 +14,7 @@ pub struct Connection {
     pub remote_path: String,
     pub local_path: String,
     pub default: bool,
-    pub protocol: Protocol,
+    pub protocol: i8,
     pub created_at: String,
     pub updated_at: String,
     pub last_connected_at: String,
@@ -71,16 +71,16 @@ pub fn initialize() -> Result<(), String> {
     }
 }
 
-pub fn create_tmp_connection() {
-    let lite = sqlite::open(get_database_path()).unwrap();
-    match lite.execute(
-        "INSERT INTO `connections` ('name', 'host', 'port', 'username', 'password', 'private_key', 'remote_path', 'local_path', 'default', 'protocol', 'last_connected_at')
-                VALUES ('Temporary Connection', 'localhost', 22, 'root', '', '', '', '', 0, 0, '2024-06-20 10:30:13.000')",
-    ) {
-        Ok(_) => (),
-        Err(e) => println!("{:?}", e),
-    }
-}
+// pub fn create_tmp_connection() {
+//     let lite = sqlite::open(get_database_path()).unwrap();
+//     match lite.execute(
+//         "INSERT INTO `connections` ('name', 'host', 'port', 'username', 'password', 'private_key', 'remote_path', 'local_path', 'default', 'protocol', 'last_connected_at')
+//                 VALUES ('Temporary Connection', 'localhost', 22, 'root', '', '', '', '', 0, 0, '2024-06-20 10:30:13.000')",
+//     ) {
+//         Ok(_) => (),
+//         Err(e) => println!("{:?}", e),
+//     }
+// }
 
 #[tauri::command]
 pub fn add_connection(connection: Connection) {
@@ -98,7 +98,7 @@ pub fn add_connection(connection: Connection) {
             connection.remote_path,
             connection.local_path,
             connection.default,
-            <i32 as From<Protocol>>::from(connection.protocol)
+            connection.protocol
         ),
     ) {
         Ok(_) => (),
@@ -126,7 +126,7 @@ pub fn get_connections() -> Vec<Connection> {
             remote_path: statement.read::<String, usize>(7).unwrap(),
             local_path: statement.read::<String, usize>(8).unwrap(),
             default: statement.read::<i64, usize>(9).unwrap() != 0,
-            protocol: From::from(statement.read::<i64, usize>(10).unwrap() as i32),
+            protocol: statement.read::<i64, usize>(10).unwrap() as i8,
             created_at: statement.read::<String, usize>(11).unwrap(),
             updated_at: statement.read::<String, usize>(12).unwrap(),
             last_connected_at: statement.read::<String, usize>(13).unwrap(),
@@ -152,7 +152,7 @@ pub fn update_connection(id: i32, connection: Connection) {
         connection.remote_path,
         connection.local_path,
         connection.default,
-        <i32 as From<Protocol>>::from(connection.protocol),
+        connection.protocol,
         chrono::Local::now().to_string(),
         id
     );
@@ -193,7 +193,7 @@ pub fn delete_connection(id: i32) {
 }
 
 #[tauri::command]
-pub fn set_default(id:i32)
+pub fn set_default(id: i32)
 {
     let lite = sqlite::open(get_database_path()).unwrap();
     match lite.execute(
@@ -211,7 +211,6 @@ pub fn set_default(id:i32)
         Ok(_) => (),
         Err(e) => println!("{:?}", e),
     }
-
 }
 
 
