@@ -58,7 +58,7 @@ export default class ConnectionManager
     async addConnection(connection: Connection): Promise<void>
     {
 
-        await invoke("add_connection", {connection: {...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp"}});
+        await invoke("add_connection", {connection: {...connection, protocol: connection.protocol}});
     }
 
     async updateConnection(connection: Connection): Promise<void>
@@ -69,7 +69,7 @@ export default class ConnectionManager
             return;
         }
         console.log("Updating connection:", connection);
-        await invoke("update_connection", {id: connection.id, connection: {...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp"}});
+        await invoke("update_connection", {id: connection.id, connection: {...connection, protocol: connection.protocol}});
         await this.getConnections();
     }
 
@@ -109,7 +109,7 @@ export default class ConnectionManager
 
     async testConnection(connection: Connection): Promise<boolean>
     {
-        const response: boolean = await invoke("test_connection", {connection: {...connection, protocol: connection.protocol === Protocol.SFTP ? "Sftp" : "Ftp"}});
+        const response: boolean = await invoke("test_connection", {options: {...connection, protocol: connection.protocol}});
         console.log("Test connection response: ", response);
         return response;
     }
