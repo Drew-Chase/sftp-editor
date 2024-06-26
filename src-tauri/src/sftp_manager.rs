@@ -10,14 +10,12 @@ use crate::connection_manager::Connection;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct File {
     path: String,
-    name: String,
     is_dir: bool,
     size: u64,
     modified: u64,
     permissions: u32,
     owner: u32,
     group: u32,
-    symlink: String,
 }
 
 #[tauri::command()]
@@ -89,22 +87,23 @@ pub fn list(path: &str, options: Connection) -> Vec<File> {
     let sftp = session.sftp().unwrap();
     match sftp.opendir(Path::new(path)) {
         Ok(mut dir) => {
-            match dir.readdir() {
-                Ok((path, stat)) => {
-                    files.push(File {
-                        path: path.to_str().unwrap().to_string(),
-                        is_dir: stat.is_dir(),
-                        name: path.file_name().unwrap().to_str().unwrap().to_string(),
-                        size: stat.size.unwrap(),
-                        modified: stat.mtime.unwrap(),
-                        permissions: stat.perm.unwrap(),
-                        owner: stat.uid.unwrap(),
-                        group: stat.gid.unwrap(),
-                        symlink: "".to_string(),
-                    });
-                }
-                Err(e) => {
-                    println!("Error: {:?}", e);
+            loop {
+                match dir.readdir() {
+                    Ok((path, stat)) => {
+                        files.push(File {
+                            path: path.to_str().unwrap().to_string(),
+                            is_dir: stat.is_dir(),
+                            size: stat.size.unwrap(),
+                            modified: stat.mtime.unwrap(),
+                            permissions: stat.perm.unwrap(),
+                            owner: stat.uid.unwrap(),
+                            group: stat.gid.unwrap(),
+                        });
+                    }
+                    Err(e) => {
+                        println!("Error: {:?}", e);
+                        break;
+                    }
                 }
             }
         }
