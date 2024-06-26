@@ -246,7 +246,7 @@ function SiteDetails(props: { connection: Connection })
                 }}/>
             </div>
             <div className={"flex flex-row gap-2 fixed bottom-4 right-7 z-10"}>
-                <Button variant={"solid"} onClick={async () => await manager.testConnection(connection)}>Test Connection</Button>
+                <Button variant={"solid"} onClick={async () => console.log(await manager.listDirectory(connection.remote_path, connection))}>Test Connection</Button>
                 {isNewConnection ? <Button color={"primary"} onClick={onSave}>Add</Button> : <></>}
             </div>
         </div>
