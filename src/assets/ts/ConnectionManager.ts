@@ -113,6 +113,11 @@ export default class ConnectionManager
         console.log("Test connection response: ", response);
         return response;
     }
+
+    async listDirectory(path: string, connection: Connection): Promise<string[]>
+    {
+        return await invoke("list", {path: path, options: {...connection, protocol: connection.protocol}});
+    }
 }
 
 export function calculateTimeDifference(date: Date): string
