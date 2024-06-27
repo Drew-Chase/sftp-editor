@@ -193,5 +193,22 @@ export function ConnectIcon(props: IconProps)
             d="M9.4 86.6C-3.1 74.1-3.1 53.9 9.4 41.4s32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L178.7 256 9.4 86.6zM256 416H544c17.7 0 32 14.3 32 32s-14.3 32-32 32H256c-17.7 0-32-14.3-32-32s14.3-32 32-32z"
             fill={props.color ?? "currentColor"}
         />
-    </svg>)
+    </svg>);
+}
+
+export function CheckmarkIcon(props: IconProps)
+{
+    return (<svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 448 512"
+        width={props.width ?? props.size ?? 24}
+        height={props.height ?? props.size ?? 24}
+        opacity={props.opacity ?? 1}
+        className={props.className}
+    >
+        <path
+            d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"
+            fill={props.color ?? "currentColor"}
+        />
+    </svg>);
 }
