@@ -1,13 +1,21 @@
-import {Autocomplete, AutocompleteItem, Button, Divider, Input, Listbox, ListboxItem, Select, SelectItem, Tooltip} from "@nextui-org/react";
+import {Autocomplete, AutocompleteItem, Button, Divider, Input, Listbox, ListboxItem, Select, SelectItem, Spinner, Tooltip} from "@nextui-org/react";
 import {useParams} from "react-router-dom";
 import ConnectionManager, {Connection, EmptyConnection, Protocol} from "../assets/ts/ConnectionManager.ts";
-import {useState} from "react";
+import {ReactNode, useState} from "react";
 import SwitchOption from "../components/SwitchSetting.tsx";
 import FileInput from "../components/FileInput.tsx";
-import {ConnectIcon, TrashIcon} from "../components/Icons.tsx";
+import {CheckmarkIcon, ConnectIcon, TrashIcon, XIcon} from "../components/Icons.tsx";
 
 const manager = new ConnectionManager();
 await manager.getConnections();
+
+enum TestingState
+{
+    Idle,
+    Testing,
+    Success,
+    Failure
+}
 
 export default function SiteBrowser()
 {
@@ -32,7 +40,6 @@ function Sidebar(props: { tab?: string, onSetTab: (tab: string) => void })
                     (
                         <ListboxItem
                             key={connection.id}
-                            href={`/site-browser/${connection.id}`}
                             description={`${connection.username}@${connection.host}:${connection.port}`}
                             className={`${props.tab === connection.id.toString() ? "bg-primary/75 hover:!bg-primary transition-all" : ""} py-3 my-1`}
                             onClick={
@@ -57,9 +64,7 @@ function Sidebar(props: { tab?: string, onSetTab: (tab: string) => void })
                                         }}><TrashIcon opacity={.5} size={12}/></Button>
                                     </Tooltip>
                                     <Tooltip content={"Connect"}>
-                                        <Button variant={"light"} className={"max-w-[24px] min-w-[24px] min-h-[24px] max-h-[24px] p-0"} onClick={async () =>
-                                        {
-                                        }}>
+                                        <Button variant={"light"} className={"max-w-[24px] min-w-[24px] min-h-[24px] max-h-[24px] p-0"} onClick={() => window.location.href = `/connection/${connection.id}`}>
                                             <ConnectIcon size={12} opacity={.5}/>
                                         </Button>
                                     </Tooltip>
@@ -83,6 +88,7 @@ function SiteDetails(props: { connection: Connection })
     const uniqueHosts = manager.connections.reduce((acc, val) => acc.includes(val.host) ? acc : [...acc, val.host], [] as string[]);
     const uniqueUsernames = manager.connections.reduce((acc, val) => acc.includes(val.username) ? acc : [...acc, val.username], [] as string[]);
     const uniquePorts = manager.connections.reduce((acc, val) => acc.includes(val.port.toString()) ? acc : [...acc, val.port.toString()], [] as string[]).map(i => Number.parseInt(i));
+    const [testingState, setTestingState] = useState(TestingState.Idle);
     const onSave = async () =>
     {
         console.log("Saving connection", connection);
@@ -246,9 +252,33 @@ function SiteDetails(props: { connection: Connection })
                 }}/>
             </div>
             <div className={"flex flex-row gap-2 fixed bottom-4 right-7 z-10"}>
-                <Button variant={"solid"} onClick={async () => console.log(await manager.listDirectory(connection.remote_path, connection))}>Test Connection</Button>
+                <Button variant={"solid"} onClick={async () =>
+                {
+                    if (testingState !== TestingState.Idle) return;
+                    setTestingState(TestingState.Testing);
+                    const response = await manager.testConnection(connection);
+                    setTestingState(response ? TestingState.Success : TestingState.Failure);
+                    setTimeout(() => setTestingState(TestingState.Idle), 5000);
+
+                }}>{((): ReactNode =>
+                {
+                    switch (testingState)
+                    {
+                        case TestingState.Testing:
+                            return (<Spinner size={"sm"}></Spinner>);
+                        case TestingState.Success:
+                            return (<CheckmarkIcon size={16}></CheckmarkIcon>);
+                        case TestingState.Failure:
+                            return (<XIcon size={16}></XIcon>);
+                        default:
+                        case TestingState.Idle:
+                            return (<span>Test Connection</span>);
+                    }
+                })()
+                }</Button>
                 {isNewConnection ? <Button color={"primary"} onClick={onSave}>Add</Button> : <></>}
             </div>
         </div>
-    );
+    )
+        ;
 }
