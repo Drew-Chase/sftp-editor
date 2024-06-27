@@ -138,6 +138,29 @@ pub fn get_connections() -> Vec<Connection> {
 }
 
 #[tauri::command]
+pub fn get_connection_by_id(id: i32) -> Connection
+{
+    let sqlite = sqlite::open(get_database_path()).unwrap();
+    let statement = sqlite.prepare(&format!("SELECT * FROM connections WHERE id = {} limit 1", id)).unwrap();
+    return Connection {
+        id: statement.read::<i64, usize>(0).unwrap() as i32,
+        name: statement.read::<String, usize>(1).unwrap(),
+        host: statement.read::<String, usize>(2).unwrap(),
+        port: statement.read::<i64, usize>(3).unwrap() as i32,
+        username: statement.read::<String, usize>(4).unwrap(),
+        password: statement.read::<String, usize>(5).unwrap(),
+        private_key: statement.read::<String, usize>(6).unwrap(),
+        remote_path: statement.read::<String, usize>(7).unwrap(),
+        local_path: statement.read::<String, usize>(8).unwrap(),
+        default: statement.read::<i64, usize>(9).unwrap() != 0,
+        protocol: statement.read::<i64, usize>(10).unwrap() as i8,
+        created_at: statement.read::<String, usize>(11).unwrap(),
+        updated_at: statement.read::<String, usize>(12).unwrap(),
+        last_connected_at: statement.read::<String, usize>(13).unwrap(),
+    };
+}
+
+#[tauri::command]
 pub fn update_connection(id: i32, connection: Connection) {
     println!("Updating '{:?}' {:?}", id, connection);
     let lite = sqlite::open(get_database_path()).unwrap();
