@@ -6,7 +6,7 @@ use std::env;
 use tauri::Manager;
 
 use app_settings::{get_settings, save_settings};
-use connection_manager::{add_connection, delete_connection, get_connections, initialize, set_default, update_connection, update_join};
+use connection_manager::{add_connection, delete_connection, get_connections, initialize, set_default, update_connection, update_join, get_connection_by_id};
 use sftp_manager::{list, test_connection};
 
 // use crate::connection_manager::create_tmp_connection;
@@ -40,6 +40,7 @@ fn main() {
             set_default,
             test_connection,
             list,
+            get_connection_by_id
         ])
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
