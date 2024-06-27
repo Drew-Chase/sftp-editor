@@ -24,6 +24,17 @@ export interface Connection
     last_connected_at: Date,
 }
 
+export interface File
+{
+    path: string,
+    is_dir: boolean,
+    size: number,
+    modified: number,
+    permissions: number,
+    owner: number,
+    group: number,
+}
+
 export const EmptyConnection: Connection = {
     id: -1,
     name: "",
@@ -40,7 +51,6 @@ export const EmptyConnection: Connection = {
     updated_at: new Date(),
     last_connected_at: new Date()
 };
-
 
 export default class ConnectionManager
 {
@@ -114,7 +124,17 @@ export default class ConnectionManager
         return response;
     }
 
-    async listDirectory(path: string, connection: Connection): Promise<string[]>
+    async getConnectionById(id: number): Promise<Connection>
+    {
+        return await invoke("get_connection_by_id", {id: id});
+    }
+
+    connect(connection: Connection)
+    {
+        window.location.href = `/connection/${connection.id}`;
+    }
+
+    async listDirectory(path: string, connection: Connection): Promise<File[]>
     {
         return await invoke("list", {path: path, options: {...connection, protocol: connection.protocol}});
     }
