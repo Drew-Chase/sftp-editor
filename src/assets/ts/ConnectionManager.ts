@@ -59,15 +59,19 @@ export default class ConnectionManager
     constructor()
     {
         this.getConnections().then((connections) =>
-        {
-            console.log("Connections loaded: ", connections);
-        });
+                                   {
+                                       console.log("Connections loaded: ", connections);
+                                   });
     }
 
 
     async addConnection(connection: Connection): Promise<void>
     {
-
+        if (connection.id === EmptyConnection.id)
+        {
+            console.error(`Cannot add empty connection!`, connection);
+            return;
+        }
         await invoke("add_connection", {connection: {...connection, protocol: connection.protocol}});
     }
 
@@ -108,12 +112,12 @@ export default class ConnectionManager
     {
         this.connections = await invoke("get_connections") as Connection[];
         this.connections = this.connections.map(connection =>
-        {
-            connection.created_at = new Date(connection.created_at);
-            connection.updated_at = new Date(connection.updated_at);
-            connection.last_connected_at = new Date(connection.last_connected_at);
-            return connection;
-        });
+                                                {
+                                                    connection.created_at = new Date(connection.created_at);
+                                                    connection.updated_at = new Date(connection.updated_at);
+                                                    connection.last_connected_at = new Date(connection.last_connected_at);
+                                                    return connection;
+                                                });
         return this.connections;
     }
 
@@ -126,17 +130,41 @@ export default class ConnectionManager
 
     async getConnectionById(id: number): Promise<Connection>
     {
-        return await invoke("get_connection_by_id", {id: id});
+        try
+        {
+            return await invoke("get_connection_by_id", {id: id});
+        } catch (e)
+        {
+            console.error(`Unable to get connection with id of ${id}\nError: `, e);
+            return EmptyConnection;
+        }
     }
 
     connect(connection: Connection)
     {
+        if (connection.id === EmptyConnection.id)
+        {
+            console.error(`Cannot connect to an empty connection!`, connection);
+            return;
+        }
         window.location.href = `/connection/${connection.id}`;
     }
 
     async listDirectory(path: string, connection: Connection): Promise<File[]>
     {
-        return await invoke("list", {path: path, options: {...connection, protocol: connection.protocol}});
+        if (connection.id === EmptyConnection.id)
+        {
+            console.error(`Cannot list files for an empty connection!`, connection);
+            return [];
+        }
+        try
+        {
+            return await invoke("list", {path: path, options: {...connection, protocol: connection.protocol}});
+        } catch (e)
+        {
+            console.error(e);
+            return [];
+        }
     }
 }
 
