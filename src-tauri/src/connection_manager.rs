@@ -107,57 +107,62 @@ pub fn add_connection(connection: Connection) {
 }
 
 #[tauri::command]
-pub fn get_connections() -> Vec<Connection> {
+pub fn get_connections() -> Result<Vec<Connection>, String> {
     let mut connections = Vec::new();
-    let lite = sqlite::open(get_database_path()).unwrap();
+    let lite = sqlite::open(get_database_path()).map_err(|e| e.to_string())?;
     let mut statement = lite
         .prepare("SELECT * FROM connections ORDER BY last_connected_at DESC")
-        .unwrap();
+        .map_err(|e| e.to_string())?;
 
     while let sqlite::State::Row = statement.next().unwrap() {
         let connection = Connection {
-            id: statement.read::<i64, usize>(0).unwrap() as i32,
-            name: statement.read::<String, usize>(1).unwrap(),
-            host: statement.read::<String, usize>(2).unwrap(),
-            port: statement.read::<i64, usize>(3).unwrap() as i32,
-            username: statement.read::<String, usize>(4).unwrap(),
-            password: statement.read::<String, usize>(5).unwrap(),
-            private_key: statement.read::<String, usize>(6).unwrap(),
-            remote_path: statement.read::<String, usize>(7).unwrap(),
-            local_path: statement.read::<String, usize>(8).unwrap(),
-            default: statement.read::<i64, usize>(9).unwrap() != 0,
-            protocol: statement.read::<i64, usize>(10).unwrap() as i8,
-            created_at: statement.read::<String, usize>(11).unwrap(),
-            updated_at: statement.read::<String, usize>(12).unwrap(),
-            last_connected_at: statement.read::<String, usize>(13).unwrap(),
+            id: statement.read::<i64, usize>(0).map_err(|e| format!("Failed to get id from database: {:?}", e.to_string()))? as i32,
+            name: statement.read::<String, usize>(1).map_err(|e| format!("Failed to get name from database: {:?}", e.to_string()))?,
+            host: statement.read::<String, usize>(2).map_err(|e| format!("Failed to get host from database: {:?}", e.to_string()))?,
+            port: statement.read::<i64, usize>(3).map_err(|e| format!("Failed to get port from database: {:?}", e.to_string()))? as i32,
+            username: statement.read::<String, usize>(4).map_err(|e| format!("Failed to get username from database: {:?}", e.to_string()))?,
+            password: statement.read::<String, usize>(5).map_err(|e| format!("Failed to get password from database: {:?}", e.to_string()))?,
+            private_key: statement.read::<String, usize>(6).map_err(|e| format!("Failed to get private_key from database: {:?}", e.to_string()))?,
+            remote_path: statement.read::<String, usize>(7).map_err(|e| format!("Failed to get remote_path from database: {:?}", e.to_string()))?,
+            local_path: statement.read::<String, usize>(8).map_err(|e| format!("Failed to get local_path from database: {:?}", e.to_string()))?,
+            default: statement.read::<i64, usize>(9).map_err(|e| format!("Failed to get default from database: {:?}", e.to_string()))? != 0,
+            protocol: statement.read::<i64, usize>(10).map_err(|e| format!("Failed to get protocol from database: {:?}", e.to_string()))? as i8,
+            created_at: statement.read::<String, usize>(11).map_err(|e| format!("Failed to get created_at from database: {:?}", e.to_string()))?,
+            updated_at: statement.read::<String, usize>(12).map_err(|e| format!("Failed to get updated_at from database: {:?}", e.to_string()))?,
+            last_connected_at: statement.read::<String, usize>(13).map_err(|e| format!("Failed to get last_connected_at from database: {:?}", e.to_string()))?,
         };
         connections.push(connection);
     }
 
-    connections
+    Ok(connections)
 }
 
 #[tauri::command]
-pub fn get_connection_by_id(id: i32) -> Connection
-{
-    let sqlite = sqlite::open(get_database_path()).unwrap();
-    let statement = sqlite.prepare(&format!("SELECT * FROM connections WHERE id = {} limit 1", id)).unwrap();
-    return Connection {
-        id: statement.read::<i64, usize>(0).unwrap() as i32,
-        name: statement.read::<String, usize>(1).unwrap(),
-        host: statement.read::<String, usize>(2).unwrap(),
-        port: statement.read::<i64, usize>(3).unwrap() as i32,
-        username: statement.read::<String, usize>(4).unwrap(),
-        password: statement.read::<String, usize>(5).unwrap(),
-        private_key: statement.read::<String, usize>(6).unwrap(),
-        remote_path: statement.read::<String, usize>(7).unwrap(),
-        local_path: statement.read::<String, usize>(8).unwrap(),
-        default: statement.read::<i64, usize>(9).unwrap() != 0,
-        protocol: statement.read::<i64, usize>(10).unwrap() as i8,
-        created_at: statement.read::<String, usize>(11).unwrap(),
-        updated_at: statement.read::<String, usize>(12).unwrap(),
-        last_connected_at: statement.read::<String, usize>(13).unwrap(),
-    };
+pub fn get_connection_by_id(id: i32) -> Result<Connection, String> {
+    let sqlite = sqlite::open(get_database_path()).map_err(|e| e.to_string())?;
+    let query = format!("SELECT * FROM connections WHERE id = {} limit 1", id);
+    let mut statement = sqlite.prepare(&query).map_err(|e| e.to_string())?;
+
+    if statement.next().map_err(|e| e.to_string())? != sqlite::State::Row {
+        return Err(format!("No connection found with id: {}", id));
+    }
+
+    Ok(Connection {
+        id: statement.read::<i64, usize>(0).map_err(|e| format!("Failed to get id from database: {:?}", e.to_string()))? as i32,
+        name: statement.read::<String, usize>(1).map_err(|e| format!("Failed to get name from database: {:?}", e.to_string()))?,
+        host: statement.read::<String, usize>(2).map_err(|e| format!("Failed to get host from database: {:?}", e.to_string()))?,
+        port: statement.read::<i64, usize>(3).map_err(|e| format!("Failed to get port from database: {:?}", e.to_string()))? as i32,
+        username: statement.read::<String, usize>(4).map_err(|e| format!("Failed to get username from database: {:?}", e.to_string()))?,
+        password: statement.read::<String, usize>(5).map_err(|e| format!("Failed to get password from database: {:?}", e.to_string()))?,
+        private_key: statement.read::<String, usize>(6).map_err(|e| format!("Failed to get private_key from database: {:?}", e.to_string()))?,
+        remote_path: statement.read::<String, usize>(7).map_err(|e| format!("Failed to get remote_path from database: {:?}", e.to_string()))?,
+        local_path: statement.read::<String, usize>(8).map_err(|e| format!("Failed to get local_path from database: {:?}", e.to_string()))?,
+        default: statement.read::<i64, usize>(9).map_err(|e| format!("Failed to get default from database: {:?}", e.to_string()))? != 0,
+        protocol: statement.read::<i64, usize>(10).map_err(|e| format!("Failed to get protocol from database: {:?}", e.to_string()))? as i8,
+        created_at: statement.read::<String, usize>(11).map_err(|e| format!("Failed to get created_at from database: {:?}", e.to_string()))?,
+        updated_at: statement.read::<String, usize>(12).map_err(|e| format!("Failed to get updated_at from database: {:?}", e.to_string()))?,
+        last_connected_at: statement.read::<String, usize>(13).map_err(|e| format!("Failed to get last_connected_at from database: {:?}", e.to_string()))?,
+    })
 }
 
 #[tauri::command]
