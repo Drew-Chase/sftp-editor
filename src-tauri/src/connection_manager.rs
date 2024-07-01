@@ -71,17 +71,6 @@ pub fn initialize() -> Result<(), String> {
     }
 }
 
-// pub fn create_tmp_connection() {
-//     let lite = sqlite::open(get_database_path()).unwrap();
-//     match lite.execute(
-//         "INSERT INTO `connections` ('name', 'host', 'port', 'username', 'password', 'private_key', 'remote_path', 'local_path', 'default', 'protocol', 'last_connected_at')
-//                 VALUES ('Temporary Connection', 'localhost', 22, 'root', '', '', '', '', 0, 0, '2024-06-20 10:30:13.000')",
-//     ) {
-//         Ok(_) => (),
-//         Err(e) => println!("{:?}", e),
-//     }
-// }
-
 #[tauri::command]
 pub fn add_connection(connection: Connection) {
     let lite = sqlite::open(get_database_path()).unwrap();
@@ -134,7 +123,7 @@ pub fn get_connections() -> Result<Vec<Connection>, String> {
         connections.push(connection);
     }
 
-    Ok(connections)
+    return Ok(connections);
 }
 
 #[tauri::command]
