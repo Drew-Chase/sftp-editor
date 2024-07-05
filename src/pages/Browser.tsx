@@ -11,8 +11,10 @@ let path = "";
 export default function Browser()
 {
     const [isLoading, setIsLoading] = React.useState(true);
-    const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
-    const [contextMenuPosition, setContextMenuPosition] = React.useState({x: 0, y: 0});
+    // const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
+    // const [contextMenuPosition, setContextMenuPosition] = React.useState({x: 0, y: 0});
+    let contextMenuPosition = {x: 0, y: 0};
+    let isContextMenuOpen = false;
     const id = useParams().id ?? "";
     if (id === "") window.location.href = "/site-browser/new";
     const manager = new ConnectionManager();
@@ -122,11 +124,8 @@ export default function Browser()
                 tabIndex={0}
                 onBlur={() =>
                 {
-                    setTimeout(() =>
-                               {
-                                   $("tr[context-menu-item]").css({background: ""}).removeAttr("context-menu-item");
-                                   setIsContextMenuOpen(false);
-                               }, 100);
+                    $("tr[context-menu-item]").css({background: ""}).removeAttr("context-menu-item");
+                    setIsContextMenuOpen(false);
                 }}
             >
                 <Listbox>
@@ -138,6 +137,7 @@ export default function Browser()
                             key={"new-folder"}
                             description={"Create a new folder in this directory"}
                             startContent={<NewFolderIcon/>}
+                            onClick={() => console.log("New Folder")}
                         >
                             New Folder
                         </ListboxItem>
@@ -240,106 +240,148 @@ export default function Browser()
                     isLoading={isLoading}
                     loadingContent={<Spinner label={"Loading..."}/>}
                 >
-                    {(item: File) => (
-                        <TableRow
-                            key={item.path}
-                            className={"cursor-pointer hover:bg-default-200 select-none"}
-                            onContextMenu={(e) =>
-                            {
-                                e.preventDefault();
-                                const contextMenu = $("#context-menu");
-                                const contextMenuWidth: number = contextMenu.width()!;
-                                const contextMenuHeight: number = contextMenu.height()!;
-                                let x = e.clientX - 24;
-                                let y = e.clientY;
-
-                                if (e.clientX + contextMenuWidth + 16 > window.innerWidth)
+                    {(item: File) =>
+                        (
+                            <TableRow
+                                key={item.path}
+                                className={"cursor-pointer hover:bg-default-200 select-none"}
+                                onContextMenu={(e) =>
                                 {
-                                    x = window.innerWidth - contextMenuWidth - 16;
-                                }
-                                if (e.clientY + contextMenuHeight + 24 > window.innerHeight)
-                                {
-                                    y = window.innerHeight - contextMenuHeight - 24;
-                                }
+                                    e.preventDefault();
+                                    const contextMenu = $("#context-menu");
+                                    const contextMenuWidth: number = contextMenu.width()!;
+                                    const contextMenuHeight: number = contextMenu.height()!;
+                                    let x = e.clientX - 24;
+                                    let y = e.clientY;
 
-                                setContextMenuPosition({x, y});
-                                setIsContextMenuOpen(true);
-                                contextMenu.trigger("focus");
-                                contextMenu.scrollTop(0);
-                                $(e.currentTarget as HTMLElement).css({background: "hsl(230.37deg 7.36% 34.47%)"}).attr("context-menu-item", "");
-
-                                console.log("Opening context menu at ", e.clientX, e.clientY);
-                            }}
-                            onClick={(e) =>
-                            {
-                                const selectItems = $("tr[item-selected]");
-                                const currentTarget = $(e.currentTarget as HTMLElement);
-                                if ($("tr[context-menu-item]").length > 0) return;
-
-                                if (currentTarget.attr("item-selected") !== undefined)
-                                {
-                                    currentTarget.css({background: ""}).removeAttr("item-selected").removeAttr("last-selected-item");
-                                    return;
-                                }
-
-                                if (!modifierKeys.includes("Control") && !modifierKeys.includes("Shift"))
-                                {
-                                    if (selectItems.length > 0)
+                                    if (e.clientX + contextMenuWidth + 16 > window.innerWidth)
                                     {
-                                        selectItems.css({background: ""}).removeAttr("item-selected");
+                                        x = window.innerWidth - contextMenuWidth - 16;
                                     }
-                                }
+                                    if (e.clientY + contextMenuHeight + 24 > window.innerHeight)
+                                    {
+                                        y = window.innerHeight - contextMenuHeight - 24;
+                                    }
 
-                                if (modifierKeys.includes("Shift") && selectItems.length > 0)
+                                    setContextMenuPosition({x, y});
+                                    setIsContextMenuOpen(true);
+                                    contextMenu.trigger("focus");
+                                    contextMenu.scrollTop(0);
+                                    $(e.currentTarget as HTMLElement).css({background: "hsl(230.37deg 7.36% 34.47%)"}).attr("context-menu-item", "");
+
+                                    console.log("Opening context menu at ", e.clientX, e.clientY);
+                                }}
+                                onClick={(e) =>
                                 {
-                                    const lastSelectedItem = $("tr[last-selected-item]");
-                                    const lastSelectedIndex = list.items.findIndex((item) => item.path === lastSelectedItem.attr("data-key")!);
-                                    const currentIndex = list.items.findIndex((i) => i.path === item.path);
-                                    const items: File[] = list.items.slice(Math.min(lastSelectedIndex, currentIndex), Math.max(lastSelectedIndex, currentIndex) + 1);
-                                    items.forEach((item) =>
-                                                  {
-                                                      $(`tr[data-key='${item.path}']`).css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "");
-                                                      console.log("Selected Item: ", item.path);
-                                                  });
-                                    return;
-                                }
-                                selectItems.removeAttr("last-selected-item");
-                                currentTarget.css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "").attr("last-selected-item", "");
-                            }}
-                            onDoubleClick={() =>
-                            {
-                                if (item.is_dir)
+                                    const selectItems = $("tr[item-selected]");
+                                    const currentTarget = $(e.currentTarget as HTMLElement);
+                                    if ($("#context-menu").attr("open") !== undefined) return;
+
+                                    if (currentTarget.attr("item-selected") !== undefined && (selectItems.length === 1 || modifierKeys.includes("Control")))
+                                    {
+                                        currentTarget
+                                            .css({background: ""})
+                                            .removeAttr("item-selected")
+                                            .removeAttr("last-selected-item");
+                                        return;
+                                    }
+
+                                    if (!modifierKeys.includes("Control") && !modifierKeys.includes("Shift"))
+                                    {
+                                        if (selectItems.length > 0)
+                                        {
+                                            selectItems.css({background: ""}).removeAttr("item-selected");
+                                        }
+                                    }
+
+                                    if (modifierKeys.includes("Shift") && selectItems.length > 0)
+                                    {
+                                        const lastSelectedItem = $("tr[last-selected-item]");
+                                        const allItems = currentTarget.parent().children();
+                                        const currentIndex = allItems.index(currentTarget);
+                                        const lastIndex = allItems.index(lastSelectedItem);
+                                        const inBetween = allItems.slice(Math.min(currentIndex, lastIndex), Math.max(currentIndex, lastIndex) + 1);
+                                        inBetween.css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "");
+                                        return;
+                                    }
+                                    selectItems.removeAttr("last-selected-item");
+                                    currentTarget.css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "").attr("last-selected-item", "");
+                                }}
+                                onDoubleClick={() =>
                                 {
-                                    console.log("Before Path: ", path);
-                                    console.log("Item Path: ", item.path);
-                                    console.log(`Setting path to ${path}/${item.path}`);
-                                    path = `${path}/${item.path}`.replace(/\/\//g, "/");
-                                    list.reload();
-                                }
-                            }}>
-                            <TableCell className={"rounded-l-md"}>{item.path}</TableCell>
-                            <TableCell>{new Date(item.modified * 1000).toDateString()}</TableCell>
-                            <TableCell>{item.is_dir ? "Folder" : "File"}</TableCell>
-                            <TableCell>{item.is_dir ? "" : getLargestFileSize(item.size)}</TableCell>
-                            <TableCell className={"rounded-r-md"}>
-                                <div className={"flex flex-row gap-2"}>
-                                    <Tooltip content={`Rename ${item.path}`}>
+                                    if (item.is_dir)
+                                    {
+                                        console.log("Before Path: ", path);
+                                        console.log("Item Path: ", item.path);
+                                        console.log(`Setting path to ${path}/${item.path}`);
+                                        path = `${path}/${item.path}`.replace(/\/\//g, "/");
+                                        list.reload();
+                                    }
+                                }}>
+                                <TableCell className={"rounded-l-md"}>
+                                    <Tooltip content={`${path}/${item.path}`.replace(/\/\//g, "/")} delay={1000} >
+                                        {item.path}
+                                    </Tooltip>
+                                </TableCell>
+                                <TableCell>
+                                    <Tooltip content={new Date(item.modified * 1000).toTimeString()} delay={1000}>
+                                        {new Date(item.modified * 1000).toDateString()}
+                                    </Tooltip>
+                                </TableCell>
+                                <TableCell>{item.is_dir ? "Folder" : "File"}</TableCell>
+                                <TableCell>{item.is_dir ? "" : getLargestFileSize(item.size)}</TableCell>
+                                <TableCell className={"rounded-r-md"}>
+                                    <div className={"flex flex-row gap-2"}>
+                                        <Tooltip content={`Rename ${item.path}`}>
                                         <span>
                                             <RenameIcon size={16}/>
                                         </span>
-                                    </Tooltip>
-                                    <Tooltip content={`Delete ${item.path}`} color={"danger"}>
+                                        </Tooltip>
+                                        <Tooltip content={`Delete ${item.path}`} color={"danger"}>
                                         <span className={"text-danger"}>
                                             <TrashIcon size={16}/>
                                         </span>
-                                    </Tooltip>
-                                </div>
+                                        </Tooltip>
+                                    </div>
 
-                            </TableCell>
-                        </TableRow>
-                    )}
+                                </TableCell>
+                            </TableRow>
+                        )
+                    }
                 </TableBody>
             </Table>
         </div>
     );
+
+    function setContextMenuPosition(position: { x: number; y: number })
+    {
+        contextMenuPosition = position;
+        $("#context-menu").css({left: position.x, top: position.y});
+    }
+
+    function setIsContextMenuOpen(open: boolean)
+    {
+        isContextMenuOpen = open;
+        $("#context-menu")
+            .css({
+                     opacity: open ? 1 : 0,
+                     transform: open ? "scale(1)" : "scale(0.9)",
+                     pointerEvents: "all"
+                 });
+        if (!open)
+        {
+            console.log("Closing context menu");
+            setTimeout(() =>
+                       {
+                           if (!isContextMenuOpen)
+                           {
+                               $("#context-menu").css({pointerEvents: "none"}).removeAttr("open");
+
+                           }
+                       }, 100);
+        } else
+        {
+            $("#context-menu").attr("open", "");
+        }
+    }
 }
