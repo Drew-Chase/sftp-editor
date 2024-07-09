@@ -14,6 +14,7 @@ use sftp_manager::{list, test_connection};
 mod app_settings;
 mod connection_manager;
 mod sftp_manager;
+mod ssh_instance;
 
 fn main() {
     match initialize() {
