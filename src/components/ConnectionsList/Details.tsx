@@ -45,28 +45,28 @@ export default function Details(props: { manager: ConnectionManager, connection:
                     setConnection(temp);
                 }}/>
                 {isNewConnection ? <></> :
-                 <>
-                     <div className={`flex flex-row`}>
-                         <p className={""}><span className={"opacity-30"}>Created:</span><br/><span className={"font-bold opacity-30"}>{connection.created_at.toDateString()}</span></p>
-                         <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
-                         <p className={""}><span className={"opacity-30"}>Updated:</span><br/><span className={"font-bold opacity-30"}>{connection.updated_at.toDateString()}</span></p>
-                         <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
-                         <p className={""}><span className={"opacity-30"}>Last Joined:</span><br/><span className={"font-bold opacity-30"}>{connection.last_connected_at.toDateString()}</span></p>
-                     </div>
-                     <SwitchOption label={"Default"} description={"This will automatically connect on startup."} selected={connection.default} onToggle={async value =>
-                     {
-                         const temp: Connection = {...connection, default: value};
-                         if (!isNewConnection)
-                             if (value)
-                             {
-                                 await props.manager.setDefault(connection);
-                             } else
-                             {
-                                 await props.manager.updateConnection(temp);
-                             }
-                         setConnection(temp);
-                     }}/>
-                 </>
+                    <>
+                        <div className={`flex flex-row`}>
+                            <p className={""}><span className={"opacity-30"}>Created:</span><br/><span className={"font-bold opacity-30"}>{connection.created_at.toDateString()}</span></p>
+                            <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
+                            <p className={""}><span className={"opacity-30"}>Updated:</span><br/><span className={"font-bold opacity-30"}>{connection.updated_at.toDateString()}</span></p>
+                            <Divider orientation={"vertical"} className={"mx-5 my-auto h-6"}/>
+                            <p className={""}><span className={"opacity-30"}>Last Joined:</span><br/><span className={"font-bold opacity-30"}>{connection.last_connected_at.toDateString()}</span></p>
+                        </div>
+                        <SwitchOption label={"Default"} description={"This will automatically connect on startup."} selected={connection.default} onToggle={async value =>
+                        {
+                            const temp: Connection = {...connection, default: value};
+                            if (!isNewConnection)
+                                if (value)
+                                {
+                                    await props.manager.setDefault(connection);
+                                } else
+                                {
+                                    await props.manager.updateConnection(temp);
+                                }
+                            setConnection(temp);
+                        }}/>
+                    </>
                 }
             </div>
             <h2 className={"text-lg font-bold"}>Connection Details</h2>

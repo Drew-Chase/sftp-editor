@@ -16,81 +16,81 @@ export default function DirectoryTable({path, onPathChange}: { path: string, onP
     const manager = new ConnectionManager();
     let connection: Connection = EmptyConnection;
     let list: AsyncListData<File> = useAsyncList({
-                                                     async load({})
-                                                     {
-                                                         console.log("Initial Path: ", path);
-                                                         setIsLoading(true);
-                                                         connection = await manager.getConnectionById(parseInt(id));
-                                                         if (path === "" && connection.remote_path !== "")
-                                                         {
-                                                             console.log("Remote Path: ", connection.remote_path);
-                                                             path = connection.remote_path;
-                                                         } else if (path === "" && connection.remote_path === "")
-                                                         {
-                                                             path = "/";
-                                                         }
-                                                         if (connection.id === EmptyConnection.id)
-                                                         {
-                                                             console.error(`Cannot list files for an empty connection!`, connection);
-                                                             return {items: []};
-                                                         }
-                                                         console.log("Loading path: ", path, ", Connection: ", connection);
-                                                         const files = await manager.listDirectory(path, connection);
-                                                         onPathChange(path);
-                                                         setIsLoading(false);
+        async load({})
+        {
+            console.log("Initial Path: ", path);
+            setIsLoading(true);
+            connection = await manager.getConnectionById(parseInt(id));
+            if (path === "" && connection.remote_path !== "")
+            {
+                console.log("Remote Path: ", connection.remote_path);
+                path = connection.remote_path;
+            } else if (path === "" && connection.remote_path === "")
+            {
+                path = "/";
+            }
+            if (connection.id === EmptyConnection.id)
+            {
+                console.error(`Cannot list files for an empty connection!`, connection);
+                return {items: []};
+            }
+            console.log("Loading path: ", path, ", Connection: ", connection);
+            const files = await manager.listDirectory(path, connection);
+            onPathChange(path);
+            setIsLoading(false);
 
-                                                         return {items: files};
-                                                     },
-                                                     async sort({items, sortDescriptor})
-                                                     {
-                                                         console.log("Sorting: ", sortDescriptor, "Items: ", items);
-                                                         return {
-                                                             items: (items as File[])
-                                                                 .sort((a, b) =>
-                                                                       {
-                                                                           let first: number;
-                                                                           let second: number;
+            return {items: files};
+        },
+        async sort({items, sortDescriptor})
+        {
+            console.log("Sorting: ", sortDescriptor, "Items: ", items);
+            return {
+                items: (items as File[])
+                    .sort((a, b) =>
+                    {
+                        let first: number;
+                        let second: number;
 
-                                                                           switch (sortDescriptor.column)
-                                                                           {
-                                                                               case "Modified":
-                                                                                   first = a.modified;
-                                                                                   second = b.modified;
-                                                                                   break;
-                                                                               case "Type":
-                                                                                   first = a.is_dir ? 1 : 0;
-                                                                                   second = b.is_dir ? 1 : 0;
-                                                                                   break;
-                                                                               case "Size":
-                                                                                   if (a.is_dir && !b.is_dir) return -1;
-                                                                                   if (!a.is_dir && b.is_dir) return 1;
-                                                                                   first = a.size;
-                                                                                   second = b.size;
-                                                                                   break;
-                                                                               default:
-                                                                               case "Filename":
-                                                                                   first = a.path.localeCompare(b.path);
-                                                                                   second = b.path.localeCompare(a.path);
-                                                                                   break;
-                                                                           }
+                        switch (sortDescriptor.column)
+                        {
+                            case "Modified":
+                                first = a.modified;
+                                second = b.modified;
+                                break;
+                            case "Type":
+                                first = a.is_dir ? 1 : 0;
+                                second = b.is_dir ? 1 : 0;
+                                break;
+                            case "Size":
+                                if (a.is_dir && !b.is_dir) return -1;
+                                if (!a.is_dir && b.is_dir) return 1;
+                                first = a.size;
+                                second = b.size;
+                                break;
+                            default:
+                            case "Filename":
+                                first = a.path.localeCompare(b.path);
+                                second = b.path.localeCompare(a.path);
+                                break;
+                        }
 
-                                                                           let cmp = first < second ? -1 : 1;
+                        let cmp = first < second ? -1 : 1;
 
-                                                                           if (sortDescriptor.direction === "descending")
-                                                                           {
-                                                                               cmp *= -1;
-                                                                           }
+                        if (sortDescriptor.direction === "descending")
+                        {
+                            cmp *= -1;
+                        }
 
-                                                                           return cmp;
-                                                                       })
-                                                         };
-                                                     }
-                                                 });
+                        return cmp;
+                    })
+            };
+        }
+    });
 
     useEffect(() =>
-              {
-                  list.reload();
-              }, [path]);
+    {
+        list.reload();
+    }, [path]);
 
 
     let modifierKeys: string[] = [];

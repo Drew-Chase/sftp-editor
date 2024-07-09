@@ -12,6 +12,16 @@ export default class WindowChrome
         appWindow.isMinimized().then(value => this.isMinimized = value);
     }
 
+    public static getInstance(): WindowChrome
+    {
+        if (!WindowChrome._instance)
+        {
+            WindowChrome._instance = new WindowChrome();
+        }
+
+        return WindowChrome._instance;
+    }
+
     public async close()
     {
         await appWindow.close();
@@ -39,15 +49,5 @@ export default class WindowChrome
             await appWindow.maximize();
         }
         this.isMaximized = !this.isMaximized;
-    }
-
-    public static getInstance(): WindowChrome
-    {
-        if (!WindowChrome._instance)
-        {
-            WindowChrome._instance = new WindowChrome();
-        }
-
-        return WindowChrome._instance;
     }
 }

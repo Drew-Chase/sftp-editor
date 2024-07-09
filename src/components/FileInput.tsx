@@ -6,7 +6,7 @@ export interface FileInputProps
     id?: string;
     label?: string;
     description?: string;
-    variant?: "multiline" | "single-line"
+    variant?: "multiline" | "single-line";
     value?: string;
     valueType?: "name" | "path" | "base64" | "blob" | "file" | "contents";
     type?: "file" | "directory";
@@ -33,8 +33,8 @@ export default function FileInput(props: FileInputProps)
         const input = document.createElement("input");
         if (props.type === "directory")
         {
-            input.setAttribute("webkitdirectory", "")
-            input.setAttribute("directory", "")
+            input.setAttribute("webkitdirectory", "");
+            input.setAttribute("directory", "");
             input.multiple = true;
         }
         input.type = "file";
@@ -42,7 +42,7 @@ export default function FileInput(props: FileInputProps)
             input.id = props.id;
         input.onchange = () =>
         {
-            props.onFileChange && props.onFileChange!(input.files)
+            props.onFileChange && props.onFileChange!(input.files);
             if (input.files !== null && input.files.length > 0)
             {
                 const file = input.files[0];
@@ -99,7 +99,7 @@ export default function FileInput(props: FileInputProps)
                 innerWrapper: "cursor-pointer"
             }} label={props.label} description={props.description} value={value} isReadOnly onFocus={(e) =>
             {
-                createInput()
+                createInput();
                 // @ts-ignore
                 e.target.blur();
 
@@ -110,7 +110,7 @@ export default function FileInput(props: FileInputProps)
                 mainWrapper: "cursor-pointer"
             }} label={props.label} description={props.description} value={value} isReadOnly onFocus={(e) =>
             {
-                createInput()
+                createInput();
                 // @ts-ignore
                 e.target.blur();
             }}/>

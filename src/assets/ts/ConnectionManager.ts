@@ -59,9 +59,9 @@ export default class ConnectionManager
     constructor()
     {
         this.getConnections().then((connections) =>
-                                   {
-                                       console.log("Connections loaded: ", connections);
-                                   });
+        {
+            console.log("Connections loaded: ", connections);
+        });
     }
 
 
@@ -107,12 +107,12 @@ export default class ConnectionManager
     {
         this.connections = await invoke("get_connections") as Connection[];
         this.connections = this.connections.map(connection =>
-                                                {
-                                                    connection.created_at = new Date(connection.created_at);
-                                                    connection.updated_at = new Date(connection.updated_at);
-                                                    connection.last_connected_at = new Date(connection.last_connected_at);
-                                                    return connection;
-                                                });
+        {
+            connection.created_at = new Date(connection.created_at);
+            connection.updated_at = new Date(connection.updated_at);
+            connection.last_connected_at = new Date(connection.last_connected_at);
+            return connection;
+        });
         return this.connections;
     }
 

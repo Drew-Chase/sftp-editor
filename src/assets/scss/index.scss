@@ -6,12 +6,13 @@
   width: 5px;
   height: 5px;
 }
-::-webkit-scrollbar-thumb{
+
+::-webkit-scrollbar-thumb {
   background-color: #f13848;
   border-radius: 10px;
 }
 
-::selection{
-    background-color: #f13848;
-    color: #fff;
+::selection {
+  background-color: #f13848;
+  color: #fff;
 }

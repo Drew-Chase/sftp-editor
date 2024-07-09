@@ -10,7 +10,7 @@ export default function SwitchOption(props: { label: string, description: string
                 base: cn(
                     "inline-flex flex-row-reverse w-full max-w-full bg-content1 hover:bg-content2 items-center max-h-[6rem]",
                     "justify-between cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent my-1 ",
-                    "data-[selected=true]:border-primary flex-grow",
+                    "data-[selected=true]:border-primary flex-grow"
                 ),
                 wrapper: "p-0 h-4 overflow-visible",
                 thumb: cn("w-6 h-6 border-2 shadow-lg",
