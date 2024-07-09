@@ -1,10 +1,12 @@
 import {Listbox, ListboxItem, ListboxSection} from "@nextui-org/react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {ArchiveIcon, CopyIcon, DownloadIcon, EditIcon, MoveIcon, NewFileIcon, NewFolderIcon, RenameIcon, SaveIcon, TrashIcon, UploadIcon} from "../components/Icons.tsx";
 import $ from "jquery";
 import DirectoryTable from "../components/RemoteBrowser/DirectoryTable.tsx";
 import PathBreadcrumb from "../components/RemoteBrowser/PathBreadcrumbs.tsx";
 import Console from "../components/RemoteBrowser/Console.tsx";
+import ConnectionManager, {EmptyConnection} from "../assets/ts/ConnectionManager.ts";
+import {useParams} from "react-router-dom";
 
 // let path = "";
 let contextMenuPosition = {x: 0, y: 0};
@@ -12,12 +14,25 @@ let isContextMenuOpen = false;
 export default function Browser()
 {
     const [path, setPath] = useState("");
+    const [connection, setConnection] = useState(EmptyConnection);
+    const manager = new ConnectionManager();
+    const id = useParams()["id"] ?? "";
+    if (id === "") window.location.href = "/site-browser/new";
+
+    useEffect(() =>
+    {
+        manager.getConnectionById(Number.parseInt(id)).then(res =>
+        {
+            setConnection(res);
+        });
+    }, [id]);
+
     return (
         <div className={"flex flex-col"}>
             <PathBreadcrumb path={path} onPathSelected={setPath}/>
             <ContextMenu/>
-            <DirectoryTable onPathChange={setPath} path={path}/>
-            <Console/>
+            <DirectoryTable onPathChange={setPath} path={path} manager={manager} connection={connection}/>
+            <Console manager={manager} connection={connection}/>
         </div>
     );
 }
