@@ -1,5 +1,4 @@
 import React, {useEffect} from "react";
-import {useParams} from "react-router-dom";
 import ConnectionManager, {Connection, EmptyConnection, File} from "../../assets/ts/ConnectionManager.ts";
 import {AsyncListData, useAsyncList} from "@react-stately/data";
 import $ from "jquery";
@@ -8,26 +7,22 @@ import {getLargestFileSize} from "../../assets/ts/FileMath.ts";
 import {RenameIcon, TrashIcon} from "../Icons.tsx";
 import {setContextMenuPosition, setIsContextMenuOpen} from "../../pages/Browser.tsx";
 
-export default function DirectoryTable({path, onPathChange}: { path: string, onPathChange: (path: string) => void })
+export default function DirectoryTable({path, onPathChange, manager, connection}: { path: string, onPathChange: (path: string) => void, manager: ConnectionManager, connection: Connection })
 {
+    let oldPath = "";
     const [isLoading, setIsLoading] = React.useState(true);
-    const id = useParams().id ?? "";
-    if (id === "") window.location.href = "/site-browser/new";
-    const manager = new ConnectionManager();
-    let connection: Connection = EmptyConnection;
     let list: AsyncListData<File> = useAsyncList({
         async load({})
         {
             console.log("Initial Path: ", path);
             setIsLoading(true);
-            connection = await manager.getConnectionById(parseInt(id));
             if (path === "" && connection.remote_path !== "")
             {
                 console.log("Remote Path: ", connection.remote_path);
-                path = connection.remote_path;
+                path = oldPath = connection.remote_path;
             } else if (path === "" && connection.remote_path === "")
             {
-                path = "/";
+                path = oldPath = "/";
             }
             if (connection.id === EmptyConnection.id)
             {
@@ -69,8 +64,8 @@ export default function DirectoryTable({path, onPathChange}: { path: string, onP
                                 break;
                             default:
                             case "Filename":
-                                first = a.path.localeCompare(b.path);
-                                second = b.path.localeCompare(a.path);
+                                first = a.filename.localeCompare(b.filename);
+                                second = b.filename.localeCompare(a.filename);
                                 break;
                         }
 
@@ -89,8 +84,22 @@ export default function DirectoryTable({path, onPathChange}: { path: string, onP
 
     useEffect(() =>
     {
+        if (oldPath === path) return;
+        if (oldPath === "" && path === "/")
+        {
+            oldPath = path;
+            return;
+        }
+        console.log("Reloading list due to path changing...");
+        oldPath = path;
         list.reload();
     }, [path]);
+
+    useEffect(() =>
+    {
+        if (connection === EmptyConnection) return;
+        list.reload();
+    }, [connection]);
 
 
     let modifierKeys: string[] = [];
@@ -209,11 +218,11 @@ export default function DirectoryTable({path, onPathChange}: { path: string, onP
                                 {
                                     if (item.is_dir)
                                     {
-                                        path = `${path}/${item.path}`.replace(/\/\//g, "/");
+                                        path = item.path.replace(/[\\/]+/g, "/");
                                         onPathChange(path);
                                     }
                                 }}>
-                                <TableCell className={"rounded-l-md"}>{item.path}</TableCell>
+                                <TableCell className={"rounded-l-md"}>{item.filename}</TableCell>
                                 <TableCell>
                                     <Tooltip content={new Date(item.modified * 1000).toTimeString()} delay={1000}>
                                         {new Date(item.modified * 1000).toDateString()}
