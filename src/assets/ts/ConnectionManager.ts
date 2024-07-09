@@ -27,6 +27,7 @@ export interface Connection
 export interface File
 {
     path: string,
+    filename: string,
     is_dir: boolean,
     size: number,
     modified: number,
@@ -145,6 +146,23 @@ export default class ConnectionManager
         window.location.href = `/connection/${connection.id}`;
     }
 
+    async sendCommand(command: string, connection: Connection): Promise<string>
+    {
+        if (connection.id === EmptyConnection.id)
+        {
+            console.error(`Cannot send command for an empty connection!`, connection);
+            return "";
+        }
+        try
+        {
+            return await invoke("send_ssh_command", {command: command, options: {...connection, protocol: connection.protocol}});
+        } catch (e)
+        {
+            console.error(e);
+            return "";
+        }
+    }
+
     async listDirectory(path: string, connection: Connection): Promise<File[]>
     {
         if (connection.id === EmptyConnection.id)
@@ -154,7 +172,8 @@ export default class ConnectionManager
         }
         try
         {
-            return await invoke("list", {path: path, options: {...connection, protocol: connection.protocol}});
+            let files: File[] = await invoke("list", {path: path, showHidden: true, options: {...connection, protocol: connection.protocol}});
+            return files.filter(i => i.filename !== "." && i.filename !== "..");
         } catch (e)
         {
             console.error(e);
