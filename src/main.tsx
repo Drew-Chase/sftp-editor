@@ -10,7 +10,7 @@ import Browser from "./pages/Browser.tsx";
 import Settings from "./pages/Settings.tsx";
 import MenuBar from "./components/MenuBar.tsx";
 import {GetSettings} from "./assets/ts/Settings.ts";
-import SiteBrowser from "./pages/SiteBrowser.tsx";
+import ConnectionsList from "./pages/ConnectionsList.tsx";
 
 await GetSettings();
 applyTheme();
@@ -26,19 +26,22 @@ ReactDOM.createRoot($("#root")[0]!).render(
 
 function PageContent()
 {
+    $(document).on("contextmenu", (e) => e.preventDefault());
     const navigate = useNavigate();
     return (
-        <NextUIProvider navigate={navigate}>
-            <MenuBar/>
-            <Routes>
-                <Route>
-                    <Route path="/" element={<Home/>}/>
-                    <Route path="/site-browser/:id?" element={<SiteBrowser/>}/>
-                    <Route path="/connection/:id" element={<Browser/>}/>
-                    <Route path="/settings/:tab?" element={<Settings/>}/>
-                </Route>
-            </Routes>
-        </NextUIProvider>
+        <>
+            <NextUIProvider navigate={navigate}>
+                <MenuBar/>
+                <Routes>
+                    <Route>
+                        <Route path="/" element={<Home/>}/>
+                        <Route path="/site-browser/:id?" element={<ConnectionsList/>}/>
+                        <Route path="/connection/:id" element={<Browser/>}/>
+                        <Route path="/settings/:tab?" element={<Settings/>}/>
+                    </Route>
+                </Routes>
+            </NextUIProvider>
+        </>
     );
 }
 
