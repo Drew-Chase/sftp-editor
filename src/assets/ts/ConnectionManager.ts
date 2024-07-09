@@ -67,11 +67,6 @@ export default class ConnectionManager
 
     async addConnection(connection: Connection): Promise<void>
     {
-        if (connection.id === EmptyConnection.id)
-        {
-            console.error(`Cannot add empty connection!`, connection);
-            return;
-        }
         await invoke("add_connection", {connection: {...connection, protocol: connection.protocol}});
     }
 
@@ -82,7 +77,7 @@ export default class ConnectionManager
             console.error(`Cannot update empty connection!`, connection);
             return;
         }
-        console.log("Updating connection:", connection);
+        // console.log("Updating connection:", connection);
         await invoke("update_connection", {id: connection.id, connection: {...connection, protocol: connection.protocol}});
         await this.getConnections();
     }
