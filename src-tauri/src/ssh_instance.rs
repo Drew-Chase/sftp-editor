@@ -62,9 +62,10 @@ impl SSHInstance {
         match SSHInstance::connect(options) {
             Ok(connection) => {
                 let mut channel = connection.channel;
-                let mut output = String::new();
+                let mut bytes: Vec<u8> = vec![];
                 channel.exec(command).unwrap();
-                channel.read_to_string(&mut output).unwrap();
+                channel.read_to_end(&mut bytes).unwrap();
+                let output = String::from_utf8(bytes).unwrap();
                 Ok(output)
             }
             Err(e) => {
