@@ -1,9 +1,9 @@
 import {Divider, Listbox, ListboxItem} from "@nextui-org/react";
 import {useParams} from "react-router-dom";
 import {ReactNode} from "react";
-import General from "../components/GeneralSettings.tsx";
-import Connections from "../components/ConnectionSettings.tsx";
-import About from "../components/AboutSettings.tsx";
+import General from "../components/Settings/GeneralSettings.tsx";
+import Connections from "../components/Settings/ConnectionSettings.tsx";
+import About from "../components/Settings/AboutSettings.tsx";
 
 export default function Settings()
 {
