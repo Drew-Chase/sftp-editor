@@ -156,28 +156,28 @@ export function setIsContextMenuOpen(open: boolean)
 
     const menu = $("#context-menu")
         .css({
-                 opacity: open ? 1 : 0,
-                 transform: open ? "scale(1)" : "scale(0.9)",
-                 pointerEvents: "all"
-             });
+            opacity: open ? 1 : 0,
+            transform: open ? "scale(1)" : "scale(0.9)",
+            pointerEvents: "all"
+        });
     if (!open)
     {
         console.log("Closing context menu");
         setTimeout(() =>
-                   {
-                       if (!isContextMenuOpen)
-                       {
-                           $("#context-menu").css({pointerEvents: "none"}).removeAttr("open");
+        {
+            if (!isContextMenuOpen)
+            {
+                $("#context-menu").css({pointerEvents: "none"}).removeAttr("open");
 
-                       }
-                   }, 100);
+            }
+        }, 100);
         setTimeout(() =>
-                   {
-                       if (!isContextMenuOpen)
-                       {
-                           $("#context-menu").css({left: 0, top: 0});
-                       }
-                   }, 500);
+        {
+            if (!isContextMenuOpen)
+            {
+                $("#context-menu").css({left: 0, top: 0});
+            }
+        }, 500);
     } else
     {
         menu.attr("open", "");
