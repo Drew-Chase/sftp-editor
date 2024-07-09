@@ -1,7 +1,7 @@
 import {useState} from "react";
-import {AppSettings, currentSettings, GetSettings, SaveSettings} from "../assets/ts/Settings.ts";
-import SwitchOption from "./SwitchSetting.tsx";
-import {applyTheme, Themes} from "../assets/ts/Theme.ts";
+import {AppSettings, currentSettings, GetSettings, SaveSettings} from "../../assets/ts/Settings.ts";
+import SwitchOption from "../SwitchSetting.tsx";
+import {applyTheme, Themes} from "../../assets/ts/Theme.ts";
 import {Select, SelectItem} from "@nextui-org/react";
 
 export default function General()
