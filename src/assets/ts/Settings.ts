@@ -1,4 +1,5 @@
 import {invoke} from "@tauri-apps/api/tauri";
+import Log from "./Logger.ts";
 
 export interface Panel
 {
@@ -39,6 +40,6 @@ export async function GetSettings(): Promise<AppSettings>
 
 export async function SaveSettings(settings: AppSettings)
 {
-    await invoke("save_settings", {settings: settings}).then(() => console.log("Settings saved"));
+    await invoke("save_settings", {settings: settings}).then(() => Log.debug("Settings saved"));
     await GetSettings();
 }
