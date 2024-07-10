@@ -5,7 +5,7 @@ export default function PathBreadcrumb({path, onPathSelected}: { path: string, o
 {
     Log.debug(`Loading PathBreadcrumb with path: {0}`, path);
     return (
-        <Breadcrumbs className={"ml-8 mt-4"}>
+        <Breadcrumbs className={"mt-4"}>
             {path.split("/").map((item, index) =>
             {
                 const newPath = path.split("/").slice(0, index + 1).join("/");
