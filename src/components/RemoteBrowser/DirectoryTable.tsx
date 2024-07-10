@@ -1,24 +1,27 @@
 import React, {useEffect} from "react";
 import ConnectionManager, {Connection, EmptyConnection, File} from "../../assets/ts/ConnectionManager.ts";
 import {AsyncListData, useAsyncList} from "@react-stately/data";
+import {Input, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import $ from "jquery";
-import {Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {setContextMenuPosition, setIsContextMenuOpen} from "../../pages/Browser.tsx";
+import KeyboardShortcuts, {ModifierKey} from "../../assets/ts/KeyboardShortcuts.ts";
 import {getLargestFileSize} from "../../assets/ts/FileMath.ts";
 import {RenameIcon, TrashIcon} from "../Icons.tsx";
-import {setContextMenuPosition, setIsContextMenuOpen} from "../../pages/Browser.tsx";
+import Log from "../../assets/ts/Logger.ts";
 
 export default function DirectoryTable({path, onPathChange, manager, connection}: { path: string, onPathChange: (path: string) => void, manager: ConnectionManager, connection: Connection })
 {
     let oldPath = "";
     const [isLoading, setIsLoading] = React.useState(true);
+    const [isRenaming, setIsRenaming] = React.useState(false);
     let list: AsyncListData<File> = useAsyncList({
         async load({})
         {
-            console.log("Initial Path: ", path);
+            Log.debug("Initial Path: {0}", path);
             setIsLoading(true);
             if (path === "" && connection.remote_path !== "")
             {
-                console.log("Remote Path: ", connection.remote_path);
+                Log.debug("Remote Path: {0}", connection.remote_path);
                 path = oldPath = connection.remote_path;
             } else if (path === "" && connection.remote_path === "")
             {
@@ -29,7 +32,7 @@ export default function DirectoryTable({path, onPathChange, manager, connection}
                 console.error(`Cannot list files for an empty connection!`, connection);
                 return {items: []};
             }
-            console.log("Loading path: ", path, ", Connection: ", connection);
+            Log.debug("Loading path: {0}, Connection: {1}", path, connection);
             const files = await manager.listDirectory(path, connection);
             onPathChange(path);
             setIsLoading(false);
@@ -38,7 +41,7 @@ export default function DirectoryTable({path, onPathChange, manager, connection}
         },
         async sort({items, sortDescriptor})
         {
-            console.log("Sorting: ", sortDescriptor, "Items: ", items);
+            Log.debug("Sorting: {0}, Items: {1}", sortDescriptor, items);
             return {
                 items: (items as File[])
                     .sort((a, b) =>
@@ -90,7 +93,7 @@ export default function DirectoryTable({path, onPathChange, manager, connection}
             oldPath = path;
             return;
         }
-        console.log("Reloading list due to path changing...");
+        Log.debug("Reloading list due to path changing...");
         oldPath = path;
         list.reload();
     }, [path]);
@@ -100,29 +103,6 @@ export default function DirectoryTable({path, onPathChange, manager, connection}
         if (connection === EmptyConnection) return;
         list.reload();
     }, [connection]);
-
-
-    let modifierKeys: string[] = [];
-    $(document)
-        // .off("keydown")
-        // .off("keyup")
-        .on("keydown", (e) =>
-        {
-            if (e.key === "Control" || e.key === "Shift" || e.key === "Alt")
-            {
-                if (modifierKeys.includes(e.key)) return;
-                modifierKeys.push(e.key);
-                console.log("Modifier Key Pressed: ", e.key, modifierKeys);
-            }
-        })
-        .on("keyup", (e) =>
-        {
-            if (e.key === "Control" || e.key === "Shift" || e.key === "Alt")
-            {
-                modifierKeys = modifierKeys.filter((key) => key !== e.key);
-                console.log("Modifier Key Released: ", e.key, modifierKeys);
-            }
-        });
 
     return (
         <div>
@@ -147,106 +127,115 @@ export default function DirectoryTable({path, onPathChange, manager, connection}
                     isLoading={isLoading}
                     loadingContent={<Spinner label={"Loading..."}/>}
                 >
-                    {(item: File) =>
-                        (
-                            <TableRow
-                                key={item.path}
-                                className={"cursor-pointer hover:bg-default-200 select-none"}
-                                onContextMenu={(e) =>
-                                {
-                                    e.preventDefault();
-                                    const contextMenu = $("#context-menu");
-                                    const contextMenuWidth: number = contextMenu.width()!;
-                                    const contextMenuHeight: number = contextMenu.height()!;
-                                    let x = e.clientX - 24;
-                                    let y = e.clientY;
-
-                                    if (e.clientX + contextMenuWidth + 16 > window.innerWidth)
+                    {
+                        (file: File) =>
+                            (
+                                <TableRow
+                                    key={file.path}
+                                    className={"cursor-pointer hover:bg-default-200 select-none"}
+                                    onContextMenu={(e) =>
                                     {
-                                        x = window.innerWidth - contextMenuWidth - 16;
-                                    }
-                                    if (e.clientY + contextMenuHeight + 24 > window.innerHeight)
-                                    {
-                                        y = window.innerHeight - contextMenuHeight - 24;
-                                    }
+                                        e.preventDefault();
+                                        const contextMenu = $("#context-menu");
+                                        const contextMenuWidth: number = contextMenu.width()!;
+                                        const contextMenuHeight: number = contextMenu.height()!;
+                                        let x = e.clientX - 24;
+                                        let y = e.clientY;
 
-                                    setContextMenuPosition({x, y});
-                                    setIsContextMenuOpen(true);
-                                    contextMenu.trigger("focus");
-                                    contextMenu.scrollTop(0);
-                                    $(e.currentTarget as HTMLElement).css({background: "hsl(230.37deg 7.36% 34.47%)"}).attr("context-menu-item", "");
-
-                                    console.log("Opening context menu at ", e.clientX, e.clientY);
-                                }}
-                                onClick={(e) =>
-                                {
-                                    const selectItems = $("tr[item-selected]");
-                                    const currentTarget = $(e.currentTarget as HTMLElement);
-                                    if ($("#context-menu").attr("open") !== undefined) return;
-
-                                    if (currentTarget.attr("item-selected") !== undefined && (selectItems.length === 1 || modifierKeys.includes("Control")))
-                                    {
-                                        currentTarget
-                                            .css({background: ""})
-                                            .removeAttr("item-selected")
-                                            .removeAttr("last-selected-item");
-                                        return;
-                                    }
-
-                                    if (!modifierKeys.includes("Control") && !modifierKeys.includes("Shift"))
-                                    {
-                                        if (selectItems.length > 0)
+                                        if (e.clientX + contextMenuWidth + 16 > window.innerWidth)
                                         {
-                                            selectItems.css({background: ""}).removeAttr("item-selected");
+                                            x = window.innerWidth - contextMenuWidth - 16;
                                         }
-                                    }
+                                        if (e.clientY + contextMenuHeight + 24 > window.innerHeight)
+                                        {
+                                            y = window.innerHeight - contextMenuHeight - 24;
+                                        }
 
-                                    if (modifierKeys.includes("Shift") && selectItems.length > 0)
+                                        setContextMenuPosition({x, y});
+                                        setIsContextMenuOpen(true);
+                                        contextMenu.trigger("focus");
+                                        contextMenu.scrollTop(0);
+                                        $(e.currentTarget as HTMLElement).css({background: "hsl(230.37deg 7.36% 34.47%)"}).attr("context-menu-item", "");
+
+                                        Log.debug("Opening context menu at {0} {1}", e.clientX, e.clientY);
+                                    }}
+                                    onClick={(e) =>
                                     {
-                                        const lastSelectedItem = $("tr[last-selected-item]");
-                                        const allItems = currentTarget.parent().children();
-                                        const currentIndex = allItems.index(currentTarget);
-                                        const lastIndex = allItems.index(lastSelectedItem);
-                                        const inBetween = allItems.slice(Math.min(currentIndex, lastIndex), Math.max(currentIndex, lastIndex) + 1);
-                                        inBetween.css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "");
-                                        return;
-                                    }
-                                    selectItems.removeAttr("last-selected-item");
-                                    currentTarget.css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "").attr("last-selected-item", "");
-                                }}
-                                onDoubleClick={() =>
-                                {
-                                    if (item.is_dir)
+                                        const selectItems = $("tr[item-selected]");
+                                        const currentTarget = $(e.currentTarget as HTMLElement);
+                                        if ($("#context-menu").attr("open") !== undefined) return;
+
+                                        if (currentTarget.attr("item-selected") !== undefined && (selectItems.length === 1 || KeyboardShortcuts.instance.isModifierPressed(ModifierKey.Control)))
+                                        {
+                                            currentTarget
+                                                .css({background: ""})
+                                                .removeAttr("item-selected")
+                                                .removeAttr("last-selected-item");
+                                            return;
+                                        }
+
+                                        if (!KeyboardShortcuts.instance.isModifierPressed(ModifierKey.Control) && !KeyboardShortcuts.instance.isModifierPressed(ModifierKey.Shift))
+                                        {
+                                            if (selectItems.length > 0)
+                                            {
+                                                selectItems.css({background: ""}).removeAttr("item-selected");
+                                            }
+                                        }
+
+                                        if (KeyboardShortcuts.instance.isModifierPressed(ModifierKey.Shift) && selectItems.length > 0)
+                                        {
+                                            const lastSelectedItem = $("tr[last-selected-item]");
+                                            const allItems = currentTarget.parent().children();
+                                            const currentIndex = allItems.index(currentTarget);
+                                            const lastIndex = allItems.index(lastSelectedItem);
+                                            const inBetween = allItems.slice(Math.min(currentIndex, lastIndex), Math.max(currentIndex, lastIndex) + 1);
+                                            inBetween.css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "");
+                                            return;
+                                        }
+                                        selectItems.removeAttr("last-selected-item");
+                                        currentTarget.css({background: "hsl(230.37deg 7.36% 30%)"}).attr("item-selected", "").attr("last-selected-item", "");
+                                    }}
+                                    onDoubleClick={() =>
                                     {
-                                        path = item.path.replace(/[\\/]+/g, "/");
-                                        onPathChange(path);
-                                    }
-                                }}>
-                                <TableCell className={"rounded-l-md"}>{item.filename}</TableCell>
-                                <TableCell>
-                                    <Tooltip content={new Date(item.modified * 1000).toTimeString()} delay={1000}>
-                                        {new Date(item.modified * 1000).toDateString()}
-                                    </Tooltip>
-                                </TableCell>
-                                <TableCell>{item.is_dir ? "Folder" : "File"}</TableCell>
-                                <TableCell>{item.is_dir ? "" : getLargestFileSize(item.size)}</TableCell>
-                                <TableCell className={"rounded-r-md"}>
-                                    <div className={"flex flex-row gap-2"}>
-                                        <Tooltip content={`Rename ${item.path}`}>
-                                        <span>
+                                        if (file.is_dir)
+                                        {
+                                            onPathChange(file.path.replace(/[\\/]+/g, "/"));
+                                        }
+                                    }}>
+                                    <TableCell className={"rounded-l-md"}>
+                                        {isRenaming ? <Input value={file.filename} onBlur={async (e) =>
+                                        {
+                                            // TODO: Send message to the server to rename the file
+                                            // const value = (e.target as HTMLInputElement).value;
+                                            // const response = await manager.sendCommand(`mv "${item.path}" "${path}/${value}"`, connection);
+                                            // Log.debug("Rename Response: {0}", response);
+                                            // setIsRenaming(false);
+                                        }}/> : file.filename}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Tooltip content={new Date(file.modified * 1000).toTimeString()} delay={1000}>
+                                            {new Date(file.modified * 1000).toDateString()}
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell>{file.is_dir ? "Folder" : "File"}</TableCell>
+                                    <TableCell>{file.is_dir ? "" : getLargestFileSize(file.size)}</TableCell>
+                                    <TableCell className={"rounded-r-md"}>
+                                        <div className={"flex flex-row gap-2"}>
+                                            <Tooltip content={`Rename ${file.filename}`}>
+                                        <span onClick={() => setIsRenaming(true)}>
                                             <RenameIcon size={16}/>
                                         </span>
-                                        </Tooltip>
-                                        <Tooltip content={`Delete ${item.path}`} color={"danger"}>
+                                            </Tooltip>
+                                            <Tooltip content={`Delete ${file.filename}`} color={"danger"}>
                                         <span className={"text-danger"}>
                                             <TrashIcon size={16}/>
                                         </span>
-                                        </Tooltip>
-                                    </div>
+                                            </Tooltip>
+                                        </div>
 
-                                </TableCell>
-                            </TableRow>
-                        )
+                                    </TableCell>
+                                </TableRow>
+                            )
                     }
                 </TableBody>
             </Table>
@@ -254,3 +243,4 @@ export default function DirectoryTable({path, onPathChange, manager, connection}
     );
 
 }
+
