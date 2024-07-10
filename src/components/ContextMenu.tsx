@@ -150,6 +150,6 @@
 //     {
 //         y = window.innerHeight - contextMenuHeight - 24;
 //     }
-//     console.log(x, y, content);
+//     Log.debug("{0} {1} {2}",x, y, content);
 //     return openContextMenuWithPosition(x, y, content);
 // }
