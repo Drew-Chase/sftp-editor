@@ -1,4 +1,5 @@
 import {invoke} from "@tauri-apps/api/tauri";
+import Log from "./Logger.ts";
 
 export enum Protocol
 {
@@ -61,7 +62,7 @@ export default class ConnectionManager
     {
         this.getConnections().then((connections) =>
         {
-            console.log("Connections loaded: ", connections);
+            Log.debug("Loading connections: {0}", connections.map(c => c.name));
         });
     }
 
@@ -75,10 +76,10 @@ export default class ConnectionManager
     {
         if (connection.id === EmptyConnection.id)
         {
-            console.error(`Cannot update empty connection!`, connection);
+            Log.error(`Cannot update empty connection!`, connection);
             return;
         }
-        // console.log("Updating connection:", connection);
+        // Log.debug("Updating connection: {0}", connection);
         await invoke("update_connection", {id: connection.id, connection: {...connection, protocol: connection.protocol}});
         await this.getConnections();
     }
@@ -87,7 +88,7 @@ export default class ConnectionManager
     {
         if (connection.id === EmptyConnection.id)
         {
-            console.error(`Cannot update empty connection!`, connection);
+            Log.error(`Cannot update empty connection!`, connection);
             return;
         }
         await invoke("set_default", {id: connection.id});
@@ -98,7 +99,7 @@ export default class ConnectionManager
     {
         if (connection.id === EmptyConnection.id)
         {
-            console.error(`Cannot remove empty connection!`, connection);
+            Log.error(`Cannot remove empty connection!`, connection);
             return;
         }
         await invoke("delete_connection", {id: connection.id, connection: connection});
@@ -120,7 +121,7 @@ export default class ConnectionManager
     async testConnection(connection: Connection): Promise<boolean>
     {
         const response: boolean = await invoke("test_connection", {options: {...connection, protocol: connection.protocol}});
-        console.log("Test connection response: ", response);
+        Log.debug("Test connection response: {0}", response);
         return response;
     }
 
@@ -131,7 +132,7 @@ export default class ConnectionManager
             return await invoke("get_connection_by_id", {id: id});
         } catch (e)
         {
-            console.error(`Unable to get connection with id of ${id}\nError: `, e);
+            Log.error(`Unable to get connection with id of ${id}\nError: `, e);
             return EmptyConnection;
         }
     }
@@ -140,7 +141,7 @@ export default class ConnectionManager
     {
         if (connection.id === EmptyConnection.id)
         {
-            console.error(`Cannot connect to an empty connection!`, connection);
+            Log.error(`Cannot connect to an empty connection!`, connection);
             return;
         }
         window.location.href = `/connection/${connection.id}`;
@@ -150,7 +151,7 @@ export default class ConnectionManager
     {
         if (connection.id === EmptyConnection.id)
         {
-            console.error(`Cannot send command for an empty connection!`, connection);
+            Log.error(`Cannot send command for an empty connection!`, connection);
             return "";
         }
         try
@@ -158,7 +159,7 @@ export default class ConnectionManager
             return await invoke("send_ssh_command", {command: command, options: {...connection, protocol: connection.protocol}});
         } catch (e)
         {
-            console.error(e);
+            Log.error("{0}", e);
             return "";
         }
     }
@@ -167,7 +168,7 @@ export default class ConnectionManager
     {
         if (connection.id === EmptyConnection.id)
         {
-            console.error(`Cannot list files for an empty connection!`, connection);
+            Log.error(`Cannot list files for an empty connection!`, connection);
             return [];
         }
         try
@@ -176,7 +177,7 @@ export default class ConnectionManager
             return files.filter(i => i.filename !== "." && i.filename !== "..");
         } catch (e)
         {
-            console.error(e);
+            Log.error("{0}", e);
             return [];
         }
     }
