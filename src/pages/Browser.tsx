@@ -7,6 +7,7 @@ import PathBreadcrumb from "../components/RemoteBrowser/PathBreadcrumbs.tsx";
 import Console from "../components/RemoteBrowser/Console.tsx";
 import ConnectionManager, {EmptyConnection} from "../assets/ts/ConnectionManager.ts";
 import {useParams} from "react-router-dom";
+import Log from "../assets/ts/Logger.ts";
 
 // let path = "";
 let contextMenuPosition = {x: 0, y: 0};
@@ -68,7 +69,7 @@ function ContextMenu()
                         key={"new-folder"}
                         description={"Create a new folder in this directory"}
                         startContent={<NewFolderIcon/>}
-                        onClick={() => console.log("New Folder")}
+                        onClick={() => Log.debug("New Folder")}
                     >
                         New Folder
                     </ListboxItem>
@@ -177,7 +178,7 @@ export function setIsContextMenuOpen(open: boolean)
         });
     if (!open)
     {
-        console.log("Closing context menu");
+        Log.debug("Closing context menu");
         setTimeout(() =>
         {
             if (!isContextMenuOpen)
