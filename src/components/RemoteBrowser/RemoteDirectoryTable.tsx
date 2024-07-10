@@ -9,7 +9,7 @@ import {getLargestFileSize} from "../../assets/ts/FileMath.ts";
 import {RenameIcon, TrashIcon} from "../Icons.tsx";
 import Log from "../../assets/ts/Logger.ts";
 
-export default function DirectoryTable({path, onPathChange, manager, connection}: { path: string, onPathChange: (path: string) => void, manager: ConnectionManager, connection: Connection })
+export default function RemoteDirectoryTable({path, onPathChange, manager, connection}: { path: string, onPathChange: (path: string) => void, manager: ConnectionManager, connection: Connection })
 {
     let oldPath = "";
     const [isLoading, setIsLoading] = React.useState(true);
@@ -110,9 +110,9 @@ export default function DirectoryTable({path, onPathChange, manager, connection}
                    sortDescriptor={list.sortDescriptor}
                    onSortChange={list.sort}
                    classNames={{
-                       base: "max-h-[calc(75vh_-_120px)] h-[100vh] overflow-y-auto w-[calc(100%_-_3rem)] mx-auto mt-4",
+                       base: "max-h-[calc(75vh_-_120px)] h-[100vh] overflow-y-auto mt-4",
                        table: "min-h-[32px]",
-                       wrapper: "bg-[#101010] flex-grow"
+                       wrapper: "bg-[#101010] flex-grow",
                    }}
             >
                 <TableHeader>
