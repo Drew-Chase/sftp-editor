@@ -9,6 +9,7 @@ use app_settings::{get_settings, save_settings};
 use connection_manager::{add_connection, delete_connection, get_connection_by_id, get_connections, initialize, set_default, update_connection, update_join};
 use sftp_manager::{list, send_ssh_command, test_connection};
 
+use crate::logger::{initialize_log_file, log};
 use crate::sftp_manager::download_file;
 
 // use crate::connection_manager::create_tmp_connection;
@@ -17,6 +18,7 @@ mod app_settings;
 mod connection_manager;
 mod sftp_manager;
 mod ssh_instance;
+mod logger;
 
 fn main() {
     match initialize() {
@@ -30,6 +32,8 @@ fn main() {
     }
     // create_tmp_connection();
     // return;
+
+    initialize_log_file();
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -46,7 +50,7 @@ fn main() {
             get_connection_by_id,
             send_ssh_command,
             download_file,
-
+            log
         ])
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
