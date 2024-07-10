@@ -11,6 +11,7 @@ import Settings from "./pages/Settings.tsx";
 import MenuBar from "./components/MenuBar.tsx";
 import {GetSettings} from "./assets/ts/Settings.ts";
 import ConnectionsList from "./pages/ConnectionsList.tsx";
+import KeyboardShortcuts from "./assets/ts/KeyboardShortcuts.ts";
 
 await GetSettings();
 applyTheme();
@@ -26,6 +27,7 @@ ReactDOM.createRoot($("#root")[0]!).render(
 
 function PageContent()
 {
+    KeyboardShortcuts.instance;
     $(document).on("contextmenu", (e) => e.preventDefault());
     const navigate = useNavigate();
     return (
