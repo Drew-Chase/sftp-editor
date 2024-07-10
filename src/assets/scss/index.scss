@@ -12,6 +12,10 @@
   border-radius: 10px;
 }
 
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
 ::selection {
   background-color: #f13848;
   color: #fff;
