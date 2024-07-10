@@ -1,8 +1,8 @@
-import {Listbox, ListboxItem, ListboxSection} from "@nextui-org/react";
+import {Button, Listbox, ListboxItem, ListboxSection, Tooltip} from "@nextui-org/react";
 import {useEffect, useState} from "react";
-import {ArchiveIcon, CopyIcon, DownloadIcon, EditIcon, MoveIcon, NewFileIcon, NewFolderIcon, RenameIcon, SaveIcon, TrashIcon, UploadIcon} from "../components/Icons.tsx";
+import {ArchiveIcon, ClosePanelIcon, CopyIcon, DownloadIcon, EditIcon, MoveIcon, NewFileIcon, NewFolderIcon, RenameIcon, SaveIcon, TrashIcon, UploadIcon} from "../components/Icons.tsx";
 import $ from "jquery";
-import DirectoryTable from "../components/RemoteBrowser/DirectoryTable.tsx";
+import RemoteDirectoryTable from "../components/RemoteBrowser/RemoteDirectoryTable.tsx";
 import PathBreadcrumb from "../components/RemoteBrowser/PathBreadcrumbs.tsx";
 import Console from "../components/RemoteBrowser/Console.tsx";
 import ConnectionManager, {EmptyConnection} from "../assets/ts/ConnectionManager.ts";
@@ -29,10 +29,32 @@ export default function Browser()
     }, [id]);
 
     return (
-        <div className={"flex flex-col"}>
-            <PathBreadcrumb path={path} onPathSelected={setPath}/>
+        <div className={"flex flex-col w-[calc(100%_-_3rem)] mx-auto"}>
             <ContextMenu/>
-            <DirectoryTable onPathChange={setPath} path={path} manager={manager} connection={connection}/>
+            <div className={"flex flex-row"}>
+                <div className={"flex flex-col w-[calc(50%_-_40px)] m-0"}>
+                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                    <RemoteDirectoryTable onPathChange={setPath} path={path} manager={manager} connection={connection}/>
+                </div>
+
+                <div className={"flex flex-col mt-auto max-h-[calc(75vh_-_120px)] h-[100vh]"}>
+                    <div className={"flex flex-row h-[100%] justify-between"}>
+                        <Tooltip content={"Collapse Local Folder View"} placement={"left"}>
+                            <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"}> <ClosePanelIcon opacity={.5} className={"rotate-180"}/> </Button>
+                        </Tooltip>
+                        <Tooltip content={"Collapse Remote Folder View"} placement={"right"}>
+                            <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"}> <ClosePanelIcon opacity={.5}/> </Button>
+                        </Tooltip>
+                    </div>
+                    <Tooltip content={"Collapse Console View"} placement={"top"}>
+                        <Button variant={"light"} className={"h-8 w-[100%] my-1"}> <ClosePanelIcon opacity={.5} className={"rotate-90"}/> </Button>
+                    </Tooltip>
+                </div>
+                <div className={"flex flex-col w-[calc(50%_-_40px)] m-0"}>
+                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                    <RemoteDirectoryTable onPathChange={setPath} path={path} manager={manager} connection={connection}/>
+                </div>
+            </div>
             <Console manager={manager} connection={connection}/>
         </div>
     );
@@ -81,6 +103,13 @@ function ContextMenu()
                         New File
                     </ListboxItem>
                     <ListboxItem
+                        key={"goto"}
+                        description={"Opens a dialog to navigate to a different directory"}
+                        startContent={<NewFileIcon/>}
+                    >
+                        Go To...
+                    </ListboxItem>
+                    <ListboxItem
                         key={"upload"}
                         description={"Upload a file or folder to this directory"}
                         startContent={<UploadIcon/>}
@@ -89,7 +118,7 @@ function ContextMenu()
                     </ListboxItem>
                     <ListboxItem
                         key={"set-default-remote-path"}
-                        description={"Set this directory as the default remote path"}
+                        description={"Set this directory as the default path"}
                         startContent={<SaveIcon/>}
                     >
                         Set as Default
