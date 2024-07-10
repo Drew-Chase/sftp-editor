@@ -1,8 +1,9 @@
 import {BreadcrumbItem, Breadcrumbs} from "@nextui-org/react";
+import Log from "../../assets/ts/Logger.ts";
 
 export default function PathBreadcrumb({path, onPathSelected}: { path: string, onPathSelected: (path: string) => void })
 {
-    console.log(`Loading PathBreadcrumb with path: ${path}`);
+    Log.debug(`Loading PathBreadcrumb with path: {0}`, path);
     return (
         <Breadcrumbs className={"ml-8 mt-4"}>
             {path.split("/").map((item, index) =>
