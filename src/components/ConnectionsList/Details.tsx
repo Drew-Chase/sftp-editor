@@ -4,6 +4,7 @@ import {Autocomplete, AutocompleteItem, Button, Divider, Input, Select, SelectIt
 import SwitchOption from "../SwitchSetting.tsx";
 import FileInput from "../FileInput.tsx";
 import {CheckmarkIcon, XIcon} from "../Icons.tsx";
+import Log from "../../assets/ts/Logger.ts";
 
 enum TestingState
 {
@@ -24,7 +25,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
     const [testingState, setTestingState] = useState(TestingState.Idle);
     const onSave = async () =>
     {
-        console.log("Saving connection", connection);
+        Log.debug("Saving connection: {0}", connection);
         await props.manager.addConnection(connection);
         window.location.reload();
 
