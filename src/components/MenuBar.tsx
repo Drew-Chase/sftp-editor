@@ -8,7 +8,7 @@ import ConnectionManager, {calculateTimeDifference, Connection} from "../assets/
 
 const manager = new ConnectionManager();
 // const connections = await manager.getConnections();
-// console.log(connections);
+// Log.debug("{0}",connections);
 
 export default function MenuBar()
 {
