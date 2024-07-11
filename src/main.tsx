@@ -28,6 +28,11 @@ ReactDOM.createRoot($("#root")[0]!).render(
 
 function PageContent()
 {
+    // Log.debug("Test message: {0}", "Hello, World!", {test: 0})
+    // Log.info("Test message: {0}", "Hello, World!", {test: 0})
+    // Log.warn("Test message: {0}", "Hello, World!", {test: 0})
+    // Log.error("Test message: {0}", "Hello, World!", {test: 0})
+    // return;
     // Initialize the singletons
     KeyboardShortcuts.instance;
     ConnectionManager.instance;
@@ -35,10 +40,6 @@ function PageContent()
     // Disable the default right-click context menu
     $(document).on("contextmenu", (e) => e.preventDefault());
 
-    // Log.debug("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.info("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.warn("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.error("Test message: {0}", "Hello, World!", {test: 0})
 
 
 
