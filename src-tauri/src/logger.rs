@@ -2,9 +2,21 @@ use std::path::Path;
 
 use sqlite::State;
 
+/// Logs a message with the given log type and saves it to a SQLite database.
+///
+/// # Arguments
+///
+/// * `message` - The message to be logged.
+/// * `arguments` - Additional arguments for the log message.
+/// * `log_type` - The type of the log.
+///
+/// # Examples
+///
+/// ```
+/// log("Error occurred", "Argument: 123", 1);
+/// ```
 #[tauri::command]
 pub fn log(message: &str, arguments: &str, log_type: i64) {
-
     match sqlite::open(std::env::var("LOG_FILE_PATH").unwrap()) {
         Ok(connection) => {
             match connection.prepare("INSERT INTO `logs` (`type`, `message`, `arguments`) VALUES (?, ?, ?);") {
@@ -29,6 +41,13 @@ pub fn log(message: &str, arguments: &str, log_type: i64) {
     println!("{}", message);
 }
 
+/// Initializes the log file by creating a SQLite database and a log table
+///
+/// # Examples
+///
+/// ```
+/// initialize_log_file();
+/// ```
 pub fn initialize_log_file() {
     let file_name = "sftp-editor-client-log.db";
     let temp_dir = std::env::temp_dir();
