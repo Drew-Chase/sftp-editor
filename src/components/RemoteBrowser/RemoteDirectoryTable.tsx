@@ -9,7 +9,7 @@ import {getLargestFileSize} from "../../assets/ts/FileMath.ts";
 import {RenameIcon, TrashIcon} from "../Icons.tsx";
 import Log from "../../assets/ts/Logger.ts";
 
-export default function RemoteDirectoryTable({path, onPathChange, manager, connection}: { path: string, onPathChange: (path: string) => void, manager: ConnectionManager, connection: Connection })
+export default function RemoteDirectoryTable({path, onPathChange, connection}: { path: string, onPathChange: (path: string) => void, connection: Connection })
 {
     let oldPath = "";
     const [isLoading, setIsLoading] = React.useState(true);
@@ -21,7 +21,7 @@ export default function RemoteDirectoryTable({path, onPathChange, manager, conne
             setIsLoading(true);
             if (path === "" && connection.remote_path !== "")
             {
-                Log.debug("Remote Path: {0}", connection.remote_path);
+                Log.debug("Remote Path:", connection.remote_path);
                 path = oldPath = connection.remote_path;
             } else if (path === "" && connection.remote_path === "")
             {
@@ -29,11 +29,11 @@ export default function RemoteDirectoryTable({path, onPathChange, manager, conne
             }
             if (connection.id === EmptyConnection.id)
             {
-                console.error(`Cannot list files for an empty connection!`, connection);
+                Log.error(`Cannot list files for an empty connection!`, connection);
                 return {items: []};
             }
-            Log.debug("Loading path: {0}, Connection: {1}", path, connection);
-            const files = await manager.listDirectory(path, connection);
+            Log.debug("Loading path: {0}, Connection:", path, connection);
+            const files = await ConnectionManager.instance.listDirectory(path);
             onPathChange(path);
             setIsLoading(false);
 
@@ -110,9 +110,9 @@ export default function RemoteDirectoryTable({path, onPathChange, manager, conne
                    sortDescriptor={list.sortDescriptor}
                    onSortChange={list.sort}
                    classNames={{
-                       base: "max-h-[calc(75vh_-_120px)] h-[100vh] overflow-y-auto mt-4",
+                       base: "overflow-y-auto mt-4",
                        table: "min-h-[32px]",
-                       wrapper: "bg-[#101010] flex-grow",
+                       wrapper: "bg-[#101010] flex-grow h-full"
                    }}
             >
                 <TableHeader>
