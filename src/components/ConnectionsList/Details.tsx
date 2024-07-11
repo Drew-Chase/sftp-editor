@@ -14,19 +14,19 @@ enum TestingState
     Failure
 }
 
-export default function Details(props: { manager: ConnectionManager, connection: Connection })
+export default function Details(props: { connection: Connection })
 {
     let [connection, setConnection] = useState<Connection>(props.connection);
     if (connection.id !== props.connection.id) setConnection(props.connection);
     const isNewConnection = connection.id === EmptyConnection.id;
-    const uniqueHosts = props.manager.connections.reduce((acc, val) => acc.includes(val.host) ? acc : [...acc, val.host], [] as string[]);
-    const uniqueUsernames = props.manager.connections.reduce((acc, val) => acc.includes(val.username) ? acc : [...acc, val.username], [] as string[]);
-    const uniquePorts = props.manager.connections.reduce((acc, val) => acc.includes(val.port.toString()) ? acc : [...acc, val.port.toString()], [] as string[]).map(i => Number.parseInt(i));
+    const uniqueHosts = ConnectionManager.instance.getConnections().reduce((acc, val) => acc.includes(val.host) ? acc : [...acc, val.host], [] as string[]);
+    const uniqueUsernames = ConnectionManager.instance.getConnections().reduce((acc, val) => acc.includes(val.username) ? acc : [...acc, val.username], [] as string[]);
+    const uniquePorts = ConnectionManager.instance.getConnections().reduce((acc, val) => acc.includes(val.port.toString()) ? acc : [...acc, val.port.toString()], [] as string[]).map(i => Number.parseInt(i));
     const [testingState, setTestingState] = useState(TestingState.Idle);
     const onSave = async () =>
     {
         Log.debug("Saving connection: {0}", connection);
-        await props.manager.addConnection(connection);
+        await ConnectionManager.addConnection(connection);
         window.location.reload();
 
     };
@@ -42,7 +42,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
                 {
                     const temp: Connection = {...connection, name: value};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}/>
                 {isNewConnection ? <></> :
@@ -60,10 +60,10 @@ export default function Details(props: { manager: ConnectionManager, connection:
                             if (!isNewConnection)
                                 if (value)
                                 {
-                                    await props.manager.setDefault(connection);
+                                    await ConnectionManager.setDefault(connection);
                                 } else
                                 {
-                                    await props.manager.updateConnection(temp);
+                                    await ConnectionManager.updateConnection(temp);
                                 }
                             setConnection(temp);
                         }}/>
@@ -78,14 +78,14 @@ export default function Details(props: { manager: ConnectionManager, connection:
                         return;
                     const temp: Connection = {...connection, host: key as string};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
 
                 }} onValueChange={async value =>
                 {
                     const temp: Connection = {...connection, host: value as string};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}>
                     {uniqueHosts.map(host => <AutocompleteItem key={host} value={host}>{host}</AutocompleteItem>)}
@@ -96,7 +96,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
                         return;
                     const temp = {...connection, port: Number.parseInt(key as string)};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }} onValueChange={async value =>
                 {
@@ -105,7 +105,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
                     value = value.replace(/[^0-9]/g, "");
                     const temp: Connection = {...connection, port: Number.parseInt(value)};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}>
                     {uniquePorts.map(port => <AutocompleteItem key={port} value={port}>{port}</AutocompleteItem>)}
@@ -114,7 +114,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
                 {
                     const temp: Connection = {...connection, protocol: Number.parseInt([...keys][0] as string)};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}>
                     <SelectItem key={"0"}>SFTP</SelectItem>
@@ -129,14 +129,14 @@ export default function Details(props: { manager: ConnectionManager, connection:
                         return;
                     const temp: Connection = {...connection, username: key as string};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
 
                 }} onValueChange={async value =>
                 {
                     const temp: Connection = {...connection, username: value as string};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}>
                     {uniqueUsernames.map(username => <AutocompleteItem key={username} value={username}>{username}</AutocompleteItem>)}
@@ -145,7 +145,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
                 {
                     const temp: Connection = {...connection, password: e.target.value};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}/>
             </div>
@@ -160,7 +160,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
                 {
                     const temp: Connection = {...connection, private_key: content};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}/>
 
@@ -174,14 +174,14 @@ export default function Details(props: { manager: ConnectionManager, connection:
                     {
                         const temp: Connection = {...connection, local_path: value};
                         if (!isNewConnection)
-                            await props.manager.updateConnection(temp);
+                            await ConnectionManager.updateConnection(temp);
                         setConnection(temp);
                     }}/>
                 <Input label={"Remote Path"} description={"The remote path that will be navigated to when connected."} value={connection.remote_path} onValueChange={async value =>
                 {
                     const temp: Connection = {...connection, remote_path: value};
                     if (!isNewConnection)
-                        await props.manager.updateConnection(temp);
+                        await ConnectionManager.updateConnection(temp);
                     setConnection(temp);
                 }}/>
             </div>
@@ -190,7 +190,7 @@ export default function Details(props: { manager: ConnectionManager, connection:
                 {
                     if (testingState !== TestingState.Idle) return;
                     setTestingState(TestingState.Testing);
-                    const response = await props.manager.testConnection(connection);
+                    const response = await ConnectionManager.testConnection(connection);
                     setTestingState(response ? TestingState.Success : TestingState.Failure);
                     setTimeout(() => setTestingState(TestingState.Idle), 5000);
 
