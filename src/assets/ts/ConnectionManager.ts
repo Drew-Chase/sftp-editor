@@ -56,57 +56,126 @@ export const EmptyConnection: Connection = {
 
 export default class ConnectionManager
 {
-    connections: Connection[] = [];
+    /**
+     * The singleton instance of ConnectionManager.
+     */
+    public static readonly instance = new ConnectionManager();
+    private connections: Connection[] = [];
+    private current: Connection = EmptyConnection;
 
-    constructor()
+
+    /**
+     * Checks if the user is currently connected to a connection.
+     */
+    public isConnected = () => this.current !== EmptyConnection;
+
+    private constructor()
     {
-        this.getConnections().then((connections) =>
+        // Load the connections from the backend when the ConnectionManager is created.
+        this.loadConnections().then((connections) =>
         {
             Log.debug("Loading connections: {0}", connections.map(c => c.name));
         });
     }
 
 
-    async addConnection(connection: Connection): Promise<void>
+    /**
+     * Adds the provided connection to the backend.
+     * @param connection - The connection to add.
+     */
+    static async addConnection(connection: Connection): Promise<void>
     {
         await invoke("add_connection", {connection: {...connection, protocol: connection.protocol}});
     }
 
-    async updateConnection(connection: Connection): Promise<void>
+    /**
+     * Updates the provided connection in the backend.
+     * @param connection - The connection to update.
+     */
+    static async updateConnection(connection: Connection): Promise<void>
     {
         if (connection.id === EmptyConnection.id)
         {
             Log.error(`Cannot update empty connection!`, connection);
             return;
         }
-        // Log.debug("Updating connection: {0}", connection);
+        Log.info("Updating connection: {0}", connection.id);
         await invoke("update_connection", {id: connection.id, connection: {...connection, protocol: connection.protocol}});
-        await this.getConnections();
+        await this.instance.loadConnections();
     }
 
-    async setDefault(connection: Connection): Promise<void>
+    /**
+     * Updates the last connected time for the provided connection.
+     * @param connection
+     */
+    static async updateJoined(connection: Connection): Promise<void>
     {
         if (connection.id === EmptyConnection.id)
         {
             Log.error(`Cannot update empty connection!`, connection);
             return;
         }
-        await invoke("set_default", {id: connection.id});
-        await this.getConnections();
+        Log.info("Updating last connected time for connection: {0}", connection.id);
+        await invoke("update_join", {id: connection.id});
+        await this.instance.loadConnections();
     }
 
-    async removeConnection(connection: Connection): Promise<void>
+    /**
+     * Retrieves the default connection.
+     */
+    getDefault(): Connection
+    {
+        return this.connections.find(c => c.default) || EmptyConnection;
+    }
+
+    /**
+     * Checks if there is a default connection.
+     */
+    hasDefault(): boolean
+    {
+        return this.connections.some(c => c.default);
+    }
+
+    /**
+     * Sets the provided connection as the default connection.
+     * Default connections will be automatically connected to when the application is opened.
+     * @param connection - The connection to set as default.
+     */
+    static async setDefault(connection: Connection): Promise<void>
+    {
+        if (connection.id === EmptyConnection.id)
+        {
+            Log.error(`Cannot update empty connection!`, connection);
+            return;
+        }
+        Log.info("Setting default connection: {0}", connection.id);
+        await invoke("set_default", {id: connection.id});
+        await this.instance.loadConnections();
+    }
+
+    /**
+     * Removes the provided connection from the backend.
+     * @param connection - The connection to remove.
+     */
+    static async removeConnection(connection: Connection): Promise<void>
     {
         if (connection.id === EmptyConnection.id)
         {
             Log.error(`Cannot remove empty connection!`, connection);
             return;
         }
+        Log.info("Removing connection: {0}", connection.id);
         await invoke("delete_connection", {id: connection.id, connection: connection});
     }
 
-    async getConnections(): Promise<Connection[]>
+
+    /**
+     * Retrieves all connections from the backend.
+     * @returns A list of connections.
+     */
+    async loadConnections(): Promise<Connection[]>
     {
+        Log.info("Getting connections from the file system.");
         this.connections = await invoke("get_connections") as Connection[];
         this.connections = this.connections.map(connection =>
         {
@@ -118,18 +187,38 @@ export default class ConnectionManager
         return this.connections;
     }
 
-    async testConnection(connection: Connection): Promise<boolean>
+    /**
+     * Retrieves cached connections.
+     */
+    getConnections()
     {
+        return this.connections;
+    }
+
+    /**
+     * Tests the provided connection to see if it is valid.
+     * @param connection - The connection to test.
+     */
+    static async testConnection(connection: Connection): Promise<boolean>
+    {
+        Log.info("Testing connection: ", connection.id);
         const response: boolean = await invoke("test_connection", {options: {...connection, protocol: connection.protocol}});
-        Log.debug("Test connection response: {0}", response);
+        Log.debug("Test connection response: ", response);
         return response;
     }
 
-    async getConnectionById(id: number): Promise<Connection>
+    /**
+     * Retrieves a connection by its id.
+     * @param id - The id of the connection to retrieve.
+     */
+    static async getConnectionById(id: number): Promise<Connection>
     {
+        Log.info("Getting connection by id: {0}", id);
         try
         {
-            return await invoke("get_connection_by_id", {id: id});
+            const connection: Connection = await invoke("get_connection_by_id", {id: id});
+            Log.debug("Connections: ", connection);
+            return connection;
         } catch (e)
         {
             Log.error(`Unable to get connection with id of ${id}\nError: `, e);
@@ -137,6 +226,10 @@ export default class ConnectionManager
         }
     }
 
+    /**
+     * Navigates to the Browser page with the provided connection.
+     * @param connection - The connection to navigate to.
+     */
     connect(connection: Connection)
     {
         if (connection.id === EmptyConnection.id)
@@ -144,45 +237,67 @@ export default class ConnectionManager
             Log.error(`Cannot connect to an empty connection!`, connection);
             return;
         }
-        window.location.href = `/connection/${connection.id}`;
+
+        this.current = connection; // Set the current connection to the provided connection.
+
+        // Update the last connected time for the connection.
+        // This is non-blocking and will not wait for a response.
+        ConnectionManager.updateConnection(connection);
     }
 
-    async sendCommand(command: string, connection: Connection): Promise<string>
+    /**
+     * Sends the provided SSH command to the current connection.
+     * If no connection is currently active, an error message will be logged and empty string will be returned.<br>
+     * <u><i><b>NOTE:</b> This function will only work with SFTP connections.</i></u>
+     * @param command
+     */
+    async sendCommand(command: string): Promise<string>
     {
-        if (connection.id === EmptyConnection.id)
+        if (!this.isConnected())
         {
-            Log.error(`Cannot send command for an empty connection!`, connection);
+            Log.error(`No connection is currently active!`);
             return "";
         }
         try
         {
-            return await invoke("send_ssh_command", {command: command, options: {...connection, protocol: connection.protocol}});
+            return await invoke("send_ssh_command", {command: command, options: {...this.current, protocol: this.current.protocol}});
         } catch (e)
         {
-            Log.error("{0}", e);
+            Log.error("Failed to send command:", e);
             return "";
         }
     }
 
-    async listDirectory(path: string, connection: Connection): Promise<File[]>
+    /**
+     * Lists the contents of the provided directory for the current connection.
+     * @param path
+     */
+    async listDirectory(path: string): Promise<File[]>
     {
-        if (connection.id === EmptyConnection.id)
+        if (!this.isConnected())
         {
-            Log.error(`Cannot list files for an empty connection!`, connection);
+            Log.error(`No connection is currently active!`);
             return [];
         }
         try
         {
-            let files: File[] = await invoke("list", {path: path, showHidden: true, options: {...connection, protocol: connection.protocol}});
-            return files.filter(i => i.filename !== "." && i.filename !== "..");
+            let files: File[] = await invoke("list", {path: path, showHidden: true, options: {...this.current, protocol: this.current.protocol}});
+            return files.filter(i => i.filename !== "." && i.filename !== ".."); // Filter out the current and parent directory.
         } catch (e)
         {
-            Log.error("{0}", e);
+            Log.error("Unable to get directory list:", e);
             return [];
         }
     }
+
 }
 
+
+/**
+ * Calculates the time difference between the current date and the provided date.
+ * The time difference is returned as a string in the format of "x years y months z days h hours m minutes s seconds".
+ * @param date - The date to calculate the time difference from.
+ */
 export function calculateTimeDifference(date: Date): string
 {
     const currentDate = new Date();
