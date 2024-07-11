@@ -42,7 +42,7 @@ export default function Browser()
     return (
         <>
             <ContextMenu/>
-            <div className={"flex flex-col w-[calc(100%_-_3rem)] mx-auto max-h-[90vh] "} style={{display: GetSettings()?.general_settings?.panel_settings?.top?.content === ContentType.None ? "none" : ""}}>
+            <div className={"flex flex-col w-[calc(100%_-_3rem)] mx-auto max-h-[90vh] "}>
                 {(() =>
                 {
                     switch (GetSettings()?.general_settings?.panel_settings?.top?.content ?? -1)
@@ -108,7 +108,7 @@ export default function Browser()
                         <Tooltip content={"Collapse Top Panel"} placement={"top"}>
                             <Button variant={"light"} className={"h-8 w-[100%] my-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.top?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-[-90deg]"}/> </Button>
                         </Tooltip>
-                        <div className={"flex flex-row h-[100%] justify-center"}>
+                        <div className={"flex flex-row h-[100%] justify-center"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None || GetSettings()?.general_settings?.panel_settings?.right?.content === ContentType.None ? "none" : ""}}>
                             <Tooltip content={"Collapse Left Panel"} placement={"left"}>
                                 <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-180"}/> </Button>
                             </Tooltip>
