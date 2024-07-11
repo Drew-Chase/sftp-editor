@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
-import ConnectionManager, {Connection} from "../../assets/ts/ConnectionManager.ts";
+import {Connection} from "../../assets/ts/ConnectionManager.ts";
 import Log from "../../assets/ts/Logger.ts";
 
-export default function Console({connection, manager}: { connection: Connection, manager: ConnectionManager })
+export default function Console({connection}: { connection: Connection })
 {
     const [consoleText, setConsoleText] = useState<string[]>([]);
     const [input, setInput] = useState<string>("");
@@ -11,7 +11,7 @@ export default function Console({connection, manager}: { connection: Connection,
 
     useEffect(() =>
     {
-        Log.debug("Connection: {0}", connection);
+        Log.debug("Connection: ", connection);
         if (connection.id === -1) return;
     }, [connection]);
 
