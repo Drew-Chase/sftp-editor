@@ -5,16 +5,15 @@ import {MaximizeIcon, MinimizeIcon, XIcon} from "./Icons.tsx";
 import WindowChrome from "../assets/ts/WindowChrome.ts";
 import "../assets/scss/chrome.scss";
 import ConnectionManager, {calculateTimeDifference, Connection} from "../assets/ts/ConnectionManager.ts";
+import {useNavigate} from "react-router-dom";
 
-const manager = new ConnectionManager();
-// const connections = await manager.getConnections();
-// Log.debug("{0}",connections);
 
 export default function MenuBar()
 {
-    const connections = manager.connections;
+    const connections = ConnectionManager.instance.getConnections();
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const byJoined: Connection[] = connections.sort((a, b) => b.last_connected_at.getTime() - a.last_connected_at.getTime()).slice(0, 3);
+    const byJoined: Connection[] = connections.sort((a, b) => b.last_connected_at.getTime() - a.last_connected_at.getTime()).slice(0, 3).filter(i => i.created_at !== i.last_connected_at);
+    const navigate = useNavigate();
 
     return (
         <Navbar id={"window-chrome"} onMenuOpenChange={setIsMenuOpen} maxWidth={"full"} height={"32px"} classNames={{base: "m-0", wrapper: "px-0"}}>
@@ -48,6 +47,15 @@ export default function MenuBar()
                                     return (
                                         <DropdownItem key={connection.id}
                                                       description={`Last joined: ${calculateTimeDifference(connection.last_connected_at)}`}
+                                                      onClick={()=>
+                                                      {
+                                                          ConnectionManager.instance.connect(connection);
+
+                                                          // This uses the useNavigate hook from react-router-dom to navigate to the connection page.
+                                                          // The function looks a little funny because it's a hook that returns a FunctionComponent.
+                                                          // For more information on useNavigate see: https://reactrouter.com/en/main/hooks/use-navigate
+                                                          navigate(`/connection/${connection.id}`);
+                                                      }}
                                         >
                                             {connection.name}
                                         </DropdownItem>
