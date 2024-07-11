@@ -1,62 +1,47 @@
-use std::fs::OpenOptions;
-use std::io::Write;
 use std::path::Path;
 
-use tauri::regex;
-
-// #[tauri::command]
-// pub fn log_debug(message: &str) {
-//     log(&format!("[DEBUG] {}", message));
-// }
-//
-// #[tauri::command]
-// pub fn log_info(message: &str) {
-//     log(&format!("[INFO] {}", message));
-// }
-//
-// #[tauri::command]
-// pub fn log_error(message: &str) {
-//     log(&format!("[ERROR] {}", message));
-// }
-//
-// #[tauri::command]
-// pub fn log_warn(message: &str) {
-//     log(&format!("[WARN] {}", message));
-// }
-//
-// #[tauri::command]
-// pub fn log_fatal(message: &str) {
-//     log(&format!("[FATAL] {}", message));
-// }
-
+use sqlite::State;
 
 #[tauri::command]
-pub fn log(message: &str) {
-    let time = chrono::Local::now().format("%m-%d-%Y %H:%M:%S").to_string();
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(std::env::var("LOG_FILE_PATH").unwrap())
-        .unwrap();
+pub fn log(message: &str, arguments: &str, log_type: i64) {
 
-    let message = format!("[{}] {}", time, strip_ansi_codes(message));
-    println!("{}", message);
-
-    if let Err(e) = writeln!(file, "{}", message) {
-        eprintln!("Couldn't write to file: {}", e);
+    match sqlite::open(std::env::var("LOG_FILE_PATH").unwrap()) {
+        Ok(connection) => {
+            match connection.prepare("INSERT INTO `logs` (`type`, `message`, `arguments`) VALUES (?, ?, ?);") {
+                Ok(mut statement) => {
+                    loop {
+                        statement.bind((1, log_type)).unwrap();
+                        statement.bind((2, message)).unwrap();
+                        statement.bind((3, arguments)).unwrap();
+                        if statement.next().unwrap() == State::Done
+                        {
+                            break;
+                        }
+                    }
+                }
+                Err(e) => eprintln!("Error preparing log statement: {}", e)
+            }
+        }
+        Err(e) => eprintln!("Error creating log file: {}", e)
     }
+
+
+    println!("{}", message);
 }
 
 pub fn initialize_log_file() {
-    let time = chrono::Local::now().timestamp();
-    let file_name = format!("sftp-client-{}.log", time);
+    let file_name = "sftp-editor-client-log.db";
     let temp_dir = std::env::temp_dir();
     let temp_dir = Path::new(&temp_dir);
     let file_path = temp_dir.join(file_name);
-    std::env::set_var("LOG_FILE_PATH", file_path);
-}
-
-fn strip_ansi_codes(input: &str) -> String {
-    let re = regex::Regex::new(r"\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]").unwrap();
-    re.replace_all(input, "").to_string()
+    std::env::set_var("LOG_FILE_PATH", &file_path);
+    match sqlite::open(file_path) {
+        Ok(connection) => {
+            if let Err(e) = connection.execute("CREATE TABLE IF NOT EXISTS `logs` ('id' INTEGER PRIMARY KEY, 'type' TINYINT, 'message' TEXT, 'arguments' TEXT DEFAULT NULL, 'created' TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
+            {
+                eprintln!("Error creating log table: {}", e);
+            }
+        }
+        Err(e) => eprintln!("Error creating log file: {}", e)
+    }
 }
