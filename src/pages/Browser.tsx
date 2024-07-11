@@ -6,8 +6,9 @@ import RemoteDirectoryTable from "../components/RemoteBrowser/RemoteDirectoryTab
 import PathBreadcrumb from "../components/RemoteBrowser/PathBreadcrumbs.tsx";
 import Console from "../components/RemoteBrowser/Console.tsx";
 import ConnectionManager, {EmptyConnection} from "../assets/ts/ConnectionManager.ts";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import Log from "../assets/ts/Logger.ts";
+import {ContentType, GetSettings} from "../assets/ts/Settings.ts";
 
 // let path = "";
 let contextMenuPosition = {x: 0, y: 0};
@@ -16,47 +17,168 @@ export default function Browser()
 {
     const [path, setPath] = useState("");
     const [connection, setConnection] = useState(EmptyConnection);
-    const manager = new ConnectionManager();
     const id = useParams()["id"] ?? "";
-    if (id === "") window.location.href = "/site-browser/new";
+    if (id === "")
+    {
+        // This uses the useNavigate hook from react-router-dom to navigate to the connection page.
+        // The function looks a little funny because it's a hook that returns a FunctionComponent.
+        // For more information on useNavigate see: https://reactrouter.com/en/main/hooks/use-navigate
+        useNavigate()(`/connection/${connection.id}`);
+    }
 
     useEffect(() =>
     {
-        manager.getConnectionById(Number.parseInt(id)).then(res =>
+        ConnectionManager.getConnectionById(Number.parseInt(id)).then(res =>
         {
+            Log.info("Connection loaded. ID: {0} Name: {1}", res.id, res.name);
+            if (!ConnectionManager.instance.isConnected())
+            {
+                ConnectionManager.instance.connect(res);
+            }
             setConnection(res);
         });
     }, [id]);
 
     return (
-        <div className={"flex flex-col w-[calc(100%_-_3rem)] mx-auto"}>
+        <>
             <ContextMenu/>
-            <div className={"flex flex-row"}>
-                <div className={"flex flex-col w-[calc(50%_-_40px)] m-0"}>
-                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
-                    <RemoteDirectoryTable onPathChange={setPath} path={path} manager={manager} connection={connection}/>
-                </div>
+            <div className={"flex flex-col w-[calc(100%_-_3rem)] mx-auto max-h-[90vh] "} style={{display: GetSettings()?.general_settings?.panel_settings?.top?.content === ContentType.None ? "none" : ""}}>
+                {(() =>
+                {
+                    switch (GetSettings()?.general_settings?.panel_settings?.top?.content ?? -1)
+                    {
+                        case ContentType.RemoteFilesystem:
+                            return (
+                                <>
+                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                    <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                </>
+                            );
+                        case ContentType.LocalFilesystem:
+                            return (
+                                <>
+                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                    <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                </>
+                            );
+                        case ContentType.RemoteTerminal:
+                            return <Console connection={connection}/>;
+                        case ContentType.LocalTerminal:
+                            return <Console connection={connection}/>;
+                        case ContentType.CodeEditor:
+                            return <Console connection={connection}/>;
+                        case ContentType.None:
+                        default:
+                            return <></>;
+                    }
+                })()}
+                <div className={"flex flex-row flex-grow flex-shrink max-h-[70vh]"}>
 
-                <div className={"flex flex-col mt-auto max-h-[calc(75vh_-_120px)] h-[100vh]"}>
-                    <div className={"flex flex-row h-[100%] justify-between"}>
-                        <Tooltip content={"Collapse Local Folder View"} placement={"left"}>
-                            <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"}> <ClosePanelIcon opacity={.5} className={"rotate-180"}/> </Button>
+                    <div className={"flex flex-col w-[calc(100%_-_40px)] m-0"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None ? "none" : ""}}>
+                        {(() =>
+                        {
+                            switch (GetSettings()?.general_settings?.panel_settings?.left?.content ?? -1)
+                            {
+                                case ContentType.RemoteFilesystem:
+                                    return (
+                                        <>
+                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                        </>
+                                    );
+                                case ContentType.LocalFilesystem:
+                                    return (
+                                        <>
+                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                        </>
+                                    );
+                                case ContentType.RemoteTerminal:
+                                    return <Console connection={connection}/>;
+                                case ContentType.LocalTerminal:
+                                    return <Console connection={connection}/>;
+                                case ContentType.None:
+                                default:
+                                    return <></>;
+                            }
+                        })()}
+                    </div>
+
+                    <div className={"flex flex-col mt-auto max-h-[calc(75vh_-_120px)] h-[100vh]"}>
+                        <Tooltip content={"Collapse Top Panel"} placement={"top"}>
+                            <Button variant={"light"} className={"h-8 w-[100%] my-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.top?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-[-90deg]"}/> </Button>
                         </Tooltip>
-                        <Tooltip content={"Collapse Remote Folder View"} placement={"right"}>
-                            <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"}> <ClosePanelIcon opacity={.5}/> </Button>
+                        <div className={"flex flex-row h-[100%] justify-center"}>
+                            <Tooltip content={"Collapse Left Panel"} placement={"left"}>
+                                <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-180"}/> </Button>
+                            </Tooltip>
+                            <Tooltip content={"Collapse Right Panel"} placement={"right"}>
+                                <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.right?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5}/> </Button>
+                            </Tooltip>
+                        </div>
+                        <Tooltip content={"Collapse Bottom Panel"} placement={"top"}>
+                            <Button variant={"light"} className={"h-8 w-[100%] my-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.bottom?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-90"}/> </Button>
                         </Tooltip>
                     </div>
-                    <Tooltip content={"Collapse Console View"} placement={"top"}>
-                        <Button variant={"light"} className={"h-8 w-[100%] my-1"}> <ClosePanelIcon opacity={.5} className={"rotate-90"}/> </Button>
-                    </Tooltip>
+                    <div className={"flex flex-col w-[calc(100%_-_40px)] m-0"} style={{display: GetSettings()?.general_settings?.panel_settings?.right?.content === ContentType.None ? "none" : ""}}>
+                        {(() =>
+                        {
+                            switch (GetSettings()?.general_settings?.panel_settings?.right?.content ?? -1)
+                            {
+                                case ContentType.RemoteFilesystem:
+                                    return (
+                                        <>
+                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                        </>
+                                    );
+                                case ContentType.LocalFilesystem:
+                                    return (
+                                        <>
+                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                        </>
+                                    );
+                                case ContentType.RemoteTerminal:
+                                    return <Console connection={connection}/>;
+                                case ContentType.LocalTerminal:
+                                    return <Console connection={connection}/>;
+                                case ContentType.None:
+                                default:
+                                    return <></>;
+                            }
+                        })()}
+                    </div>
                 </div>
-                <div className={"flex flex-col w-[calc(50%_-_40px)] m-0"}>
-                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
-                    <RemoteDirectoryTable onPathChange={setPath} path={path} manager={manager} connection={connection}/>
-                </div>
+                {(() =>
+                {
+                    switch (GetSettings()?.general_settings?.panel_settings?.bottom?.content ?? -1)
+                    {
+                        case ContentType.RemoteFilesystem:
+                            return (
+                                <>
+                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                    <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                </>
+                            );
+                        case ContentType.LocalFilesystem:
+                            return (
+                                <>
+                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                    <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
+                                </>
+                            );
+                        case ContentType.RemoteTerminal:
+                            return <Console connection={connection}/>;
+                        case ContentType.LocalTerminal:
+                            return <Console connection={connection}/>;
+                        case ContentType.None:
+                        default:
+                            return <></>;
+                    }
+                })()}
             </div>
-            <Console manager={manager} connection={connection}/>
-        </div>
+        </>
     );
 }
 
