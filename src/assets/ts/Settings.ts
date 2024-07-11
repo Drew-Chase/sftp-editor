@@ -1,12 +1,19 @@
-import {invoke} from "@tauri-apps/api/tauri";
-import Log from "./Logger.ts";
-
 export interface Panel
 {
-    content: number;
+    content: ContentType;
     width: number;
     height: number;
     visible: boolean;
+}
+
+export enum ContentType
+{
+    None = 0,
+    RemoteFilesystem = 1,
+    LocalFilesystem = 2,
+    LocalTerminal = 3,
+    RemoteTerminal = 4,
+    CodeEditor = 5,
 }
 
 export interface PanelSettings
@@ -29,17 +36,53 @@ export interface AppSettings
     general_settings: GeneralSettings;
 }
 
-export let currentSettings: AppSettings = {"general_settings": {"dark_mode": true, "start_with_windows": false, "panel_settings": {"left": {"content": 0, "width": 0, "height": 0, "visible": false}, "top": {"content": 0, "width": 0, "height": 0, "visible": false}, "right": {"content": 0, "width": 0, "height": 0, "visible": false}, "bottom": {"content": 0, "width": 0, "height": 0, "visible": false}}}};
+export let currentSettings: AppSettings = {
+    "general_settings": {
+        "dark_mode": true,
+        "start_with_windows": false,
+        "panel_settings":
+            {
+                "left":
+                    {
+                        "content": ContentType.LocalFilesystem,
+                        "width": 0,
+                        "height": 0,
+                        "visible": false
+                    },
+                "top":
+                    {
+                        "content": ContentType.CodeEditor,
+                        "width": 0,
+                        "height": 0,
+                        "visible": false
+                    },
+                "right": {
+                    "content": ContentType.RemoteFilesystem,
+                    "width": 0,
+                    "height": 0,
+                    "visible": false
+                },
+                "bottom": {
+                    "content": ContentType.RemoteTerminal,
+                    "width": 0,
+                    "height": 0,
+                    "visible": false
+                }
+            }
+    }
+};
 
-export async function GetSettings(): Promise<AppSettings>
+export function GetSettings(): AppSettings
 {
-    const settings: AppSettings = await invoke("get_settings");
+    const settings: AppSettings = JSON.parse(localStorage.getItem("settings") ?? JSON.stringify(currentSettings));
+    // const settings: AppSettings = await invoke("get_settings");
     currentSettings = settings;
     return settings;
 }
 
-export async function SaveSettings(settings: AppSettings)
+export function SaveSettings(settings: AppSettings)
 {
-    await invoke("save_settings", {settings: settings}).then(() => Log.debug("Settings saved"));
-    await GetSettings();
+    localStorage.setItem("settings", JSON.stringify(settings));
+    // await invoke("save_settings", {settings: settings}).then(() => Log.info("Settings saved"));
+    GetSettings();
 }
