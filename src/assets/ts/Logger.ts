@@ -21,6 +21,9 @@ export default class Log
     {
         const msg: LogMessage = this.buildMessage(message, args, "DEBUG");
         console.debug(`%c[${msg.type}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
+
+        // Invoke the log function in the Tauri backend
+        // This is non-blocking and will not halt the application
         invoke("log", {message: msg.message, logType: 0, arguments: JSON.stringify(msg.args)});
     }
 
@@ -34,6 +37,8 @@ export default class Log
         const msg: LogMessage = this.buildMessage(message, args, "INFO");
         console.info(`%c[${msg.type}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
+        // Invoke the log function in the Tauri backend
+        // This is non-blocking and will not halt the application
         invoke("log", {message: msg.message, logType: 1, arguments: JSON.stringify(msg.args)});
     }
 
@@ -46,6 +51,9 @@ export default class Log
     {
         const msg: LogMessage = this.buildMessage(message, args, "WARN");
         console.warn(`[${msg.type}] ${msg.message}`, ...msg.args);
+
+        // Invoke the log function in the Tauri backend
+        // This is non-blocking and will not halt the application
         invoke("log", {message: msg.message, logType: 2, arguments: JSON.stringify(msg.args)});
     }
 
@@ -58,6 +66,9 @@ export default class Log
     {
         const msg: LogMessage = this.buildMessage(message, args, "ERROR");
         console.error(`[${msg.type}] ${msg.message}`, ...msg.args);
+
+        // Invoke the log function in the Tauri backend
+        // This is non-blocking and will not halt the application
         invoke("log", {message: msg.message, logType: 3, arguments: JSON.stringify(msg.args)});
     }
 
@@ -70,16 +81,11 @@ export default class Log
      */
     private static buildMessage(message: string, args: any[], type: string): LogMessage
     {
+        // Get the indexes of the included arguments
         const includedIndexes: number[] = message.match(/{(\d+)}/g)?.map(i => parseInt(i.replace(/[{}]/g, ""))) ?? [];
+
+        // Get the arguments that are not included in the message
         const notIncludedArgs = args.filter((_, index) => !includedIndexes.includes(index));
-        for (const index of includedIndexes)
-        {
-            if (args[index] === undefined)
-            {
-                Log.error(`Failed build log message: Argument at index {0} is undefined`, index);
-                return {} as LogMessage;
-            }
-        }
 
         return {message: `${message.replace(/{(\d+)}/g, (_, number) => `${JSON.stringify(args[number])}`)}`, type, args: notIncludedArgs};
     }
