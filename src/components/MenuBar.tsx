@@ -6,6 +6,7 @@ import WindowChrome from "../assets/ts/WindowChrome.ts";
 import "../assets/scss/chrome.scss";
 import ConnectionManager, {calculateTimeDifference, Connection} from "../assets/ts/ConnectionManager.ts";
 import {useNavigate} from "react-router-dom";
+import KeyboardShortcuts, {ModifierKey} from "../assets/ts/KeyboardShortcuts.ts";
 
 
 export default function MenuBar()
@@ -14,6 +15,24 @@ export default function MenuBar()
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const byJoined: Connection[] = connections.sort((a, b) => b.last_connected_at.getTime() - a.last_connected_at.getTime()).slice(0, 3).filter(i => i.created_at !== i.last_connected_at);
     const navigate = useNavigate();
+
+    // Register the keyboard shortcuts for the menu bar.
+    // This will allow the user to press the control key and the letter "b" to navigate to the site browser.
+    KeyboardShortcuts.instance.push({
+        key: ["b"],
+        modifierKeys: [ModifierKey.Control],
+        description: "Navigate to the site browser.",
+        callback: () => navigate("/site-browser/new")
+    });
+
+    // This will allow the user to press the control key, the alt key, and the letter "s" to navigate to the settings page.
+    KeyboardShortcuts.instance.push({
+        key: ["s"],
+        modifierKeys: [ModifierKey.Control, ModifierKey.Alt],
+        description: "Navigate to the settings page.",
+        callback: () => navigate("/settings")
+    });
+
 
     return (
         <Navbar id={"window-chrome"} onMenuOpenChange={setIsMenuOpen} maxWidth={"full"} height={"32px"} classNames={{base: "m-0", wrapper: "px-0"}}>
@@ -47,7 +66,7 @@ export default function MenuBar()
                                     return (
                                         <DropdownItem key={connection.id}
                                                       description={`Last joined: ${calculateTimeDifference(connection.last_connected_at)}`}
-                                                      onClick={()=>
+                                                      onClick={() =>
                                                       {
                                                           ConnectionManager.instance.connect(connection);
 
