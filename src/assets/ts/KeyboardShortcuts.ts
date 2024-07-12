@@ -48,6 +48,7 @@ export default class KeyboardShortcuts
     public static readonly instance = new KeyboardShortcuts();
     private readonly shortcuts: KeyboardShortcut[] = [];
     private readonly pressedModifiers: ModifierKey[] = [];
+    private readonly pressedKeys: string[] = [];
 
     private constructor()
     {
@@ -62,35 +63,53 @@ export default class KeyboardShortcuts
                         {
                             Log.debug("Modifier Key Pressed: {0}", modifier);
                             this.pressedModifiers.push(modifier);
+                            Log.debug("Currently pressed modifiers:", this.pressedModifiers);
                         }
                         break;
                     }
+                }
+                if (!this.pressedKeys.includes(e.key) && e.key.length === 1)
+                {
+                    Log.debug("Key Pressed: {0}", e.key.toLowerCase());
+                    this.pressedKeys.push(e.key.toLowerCase());
                 }
             })
             .on("keyup", e =>
             {
+
+                // Check if any of the registered shortcuts match the currently pressed keys and modifiers.
+                this.shortcuts.forEach(shortcut =>
+                {
+                    if (shortcut.key.includes(e.key) && shortcut.modifierKeys.every(modifier => this.pressedModifiers.includes(modifier)))
+                    {
+                        Log.debug("Keyboard Shortcut Triggered: {0} + {1} - {2}", shortcut.modifierKeys.join(" + "), shortcut.key.join(" + "), shortcut.description || "No Description");
+                        shortcut.callback();
+                    }
+                });
+
+                // Remove the modifier key from the array of pressed modifiers.
                 for (const modifier of Object.values(ModifierKey))
                 {
                     if (e.key === modifier)
                     {
-                        if (!this.pressedModifiers.includes(modifier))
+                        if (this.pressedModifiers.includes(modifier))
                         {
-                            Log.debug("Modifier Key Released: {0}", modifier);
-                            this.pressedModifiers.slice(this.pressedModifiers.indexOf(modifier), 1); // Remove the modifier from the array.
+                            Log.debug("Modifier Key Released: {0} at index {1}", modifier, this.pressedModifiers.indexOf(modifier));
+                            this.pressedModifiers.splice(this.pressedModifiers.indexOf(modifier), 1); // Remove the modifier from the array.
+                            Log.debug("Currently pressed modifiers:", this.pressedModifiers);
                         }
                         break;
                     }
                 }
 
-                this.shortcuts.forEach(shortcut =>
+                // Remove the key from the array of pressed keys.
+                if (this.pressedKeys.includes(e.key.toLowerCase()))
                 {
-                    if (shortcut.key.includes(e.key) && shortcut.modifierKeys.every(modifier => this.pressedModifiers.includes(modifier)))
-                    {
-                        shortcut.callback();
-                    }
-                });
+                    this.pressedKeys.splice(this.pressedKeys.indexOf(e.key.toLowerCase()), 1);
+                }
 
             });
+
     }
 
 
@@ -100,6 +119,18 @@ export default class KeyboardShortcuts
      */
     push(shortcut: KeyboardShortcut)
     {
+        if (this.shortcuts.includes(shortcut))
+        {
+            Log.error("Shortcut already exists in the array.", shortcut);
+            return;
+        }
+        if (this.shortcuts.some(s => s.key === shortcut.key && s.modifierKeys === shortcut.modifierKeys))
+        {
+            Log.error("A shortcut with the same key and modifier keys already exists in the array.",
+                shortcut,
+                this.shortcuts.filter(s => s.key === shortcut.key && s.modifierKeys === shortcut.modifierKeys));
+            return;
+        }
         this.shortcuts.push(shortcut);
     }
 
