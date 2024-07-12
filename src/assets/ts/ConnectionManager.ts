@@ -282,7 +282,10 @@ export default class ConnectionManager
         try
         {
             let files: File[] = await invoke("list", {path: path, showHidden: true, options: {...this.current, protocol: this.current.protocol}});
-            return files.filter(i => i.filename !== "." && i.filename !== ".."); // Filter out the current and parent directory.
+            files =  files.filter(i => i.filename !== "." && i.filename !== ".."); // Filter out the current and parent directory.
+            files.push(...files)
+            files.push(...files)
+            return files;
         } catch (e)
         {
             Log.error("Unable to get directory list:", e);
