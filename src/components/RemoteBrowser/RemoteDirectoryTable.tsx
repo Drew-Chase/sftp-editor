@@ -8,6 +8,8 @@ import KeyboardShortcuts, {ModifierKey} from "../../assets/ts/KeyboardShortcuts.
 import {getLargestFileSize} from "../../assets/ts/FileMath.ts";
 import {RenameIcon, TrashIcon} from "../Icons.tsx";
 import Log from "../../assets/ts/Logger.ts";
+import {GetSettings} from "../../assets/ts/Settings.ts";
+import PathBreadcrumb from "./PathBreadcrumbs.tsx";
 
 export default function RemoteDirectoryTable({path, onPathChange, connection}: { path: string, onPathChange: (path: string) => void, connection: Connection })
 {
@@ -33,7 +35,14 @@ export default function RemoteDirectoryTable({path, onPathChange, connection}: {
                 return {items: []};
             }
             Log.debug("Loading path: {0}, Connection:", path, connection);
-            const files = await ConnectionManager.instance.listDirectory(path);
+            // const files = await ConnectionManager.instance.listDirectory(path);
+            const files:File[] = [{path: "/test", filename: "test", is_dir: true, modified: 84641300, size: 846413, owner: 0x0077777, group: 0x0077777, permissions: 0x0077777},];
+            for(let i = 0; i < 45; i++)
+            {
+                const rand = Math.random();
+                files.push({path: `/test${rand}`, filename: `test${rand}`, is_dir: rand >= .25, modified: 84641300/rand, size: 846413/rand, owner: 0x0077777, group: 0x0077777, permissions: 0x0077777});
+            }
+            Log.debug("Files:", files);
             onPathChange(path);
             setIsLoading(false);
 
@@ -41,7 +50,7 @@ export default function RemoteDirectoryTable({path, onPathChange, connection}: {
         },
         async sort({items, sortDescriptor})
         {
-            Log.debug("Sorting: {0}, Items: {1}", sortDescriptor, items);
+            Log.debug("Sorting: {0}, Items:", sortDescriptor, items);
             return {
                 items: (items as File[])
                     .sort((a, b) =>
@@ -106,21 +115,22 @@ export default function RemoteDirectoryTable({path, onPathChange, connection}: {
 
     return (
         <div>
+            <PathBreadcrumb path={path} onPathSelected={onPathChange}/>
             <Table isHeaderSticky
                    sortDescriptor={list.sortDescriptor}
                    onSortChange={list.sort}
                    classNames={{
                        base: "overflow-y-auto mt-4",
                        table: "min-h-[32px]",
-                       wrapper: "bg-[#101010] flex-grow h-full"
+                       wrapper: "dark:bg-[#101010] max-h-[calc(100vh_-_100px)] h-[100vh]",
                    }}
             >
                 <TableHeader>
-                    <TableColumn key={"Filename"} allowsSorting className={"w-full bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Filename</TableColumn>
-                    <TableColumn key={"Modified"} allowsSorting className={"min-w-[170px] bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Date Modified</TableColumn>
-                    <TableColumn key={"Type"} allowsSorting className={"min-w-[100px] bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Type</TableColumn>
-                    <TableColumn key={"Size"} allowsSorting className={"min-w-[170px] bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Size</TableColumn>
-                    <TableColumn key={"Actions"} className={"bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}> </TableColumn>
+                    <TableColumn key={"Filename"} allowsSorting className={"w-full dark:bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Filename</TableColumn>
+                    <TableColumn key={"Modified"} allowsSorting className={"min-w-[170px] dark:bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Date Modified</TableColumn>
+                    <TableColumn key={"Type"} allowsSorting className={"min-w-[100px] dark:bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Type</TableColumn>
+                    <TableColumn key={"Size"} allowsSorting className={"min-w-[170px] dark:bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}>Size</TableColumn>
+                    <TableColumn key={"Actions"} className={"dark:bg-[hsl(240,4%,16%,0.75)] backdrop-blur-sm"}> </TableColumn>
                 </TableHeader>
                 <TableBody
                     items={list.items as File[]}
@@ -155,7 +165,10 @@ export default function RemoteDirectoryTable({path, onPathChange, connection}: {
                                         setIsContextMenuOpen(true);
                                         contextMenu.trigger("focus");
                                         contextMenu.scrollTop(0);
-                                        $(e.currentTarget as HTMLElement).css({background: "hsl(230.37deg 7.36% 34.47%)"}).attr("context-menu-item", "");
+                                        if (GetSettings()?.general_settings?.dark_mode)
+                                            $(e.currentTarget as HTMLElement).css({background: "hsl(230.37deg 7.36% 34.47%)"}).attr("context-menu-item", "");
+                                        else
+                                            $(e.currentTarget as HTMLElement).css({background: "hsl(230.37deg 7.36% 84.47%)"}).attr("context-menu-item", "");
 
                                         Log.debug("Opening context menu at {0} {1}", e.clientX, e.clientY);
                                     }}
@@ -203,7 +216,7 @@ export default function RemoteDirectoryTable({path, onPathChange, connection}: {
                                         }
                                     }}>
                                     <TableCell className={"rounded-l-md"}>
-                                        {isRenaming ? <Input value={file.filename} onBlur={async (e) =>
+                                        {isRenaming ? <Input value={file.filename} onBlur={async (_) =>
                                         {
                                             // TODO: Send message to the server to rename the file
                                             // const value = (e.target as HTMLInputElement).value;
