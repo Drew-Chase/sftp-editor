@@ -1,9 +1,8 @@
-import {Button, Listbox, ListboxItem, ListboxSection, Tooltip} from "@nextui-org/react";
+import {Listbox, ListboxItem, ListboxSection} from "@nextui-org/react";
 import {useEffect, useState} from "react";
-import {ArchiveIcon, ClosePanelIcon, CopyIcon, DownloadIcon, EditIcon, MoveIcon, NewFileIcon, NewFolderIcon, RenameIcon, SaveIcon, TrashIcon, UploadIcon} from "../components/Icons.tsx";
+import {ArchiveIcon, CopyIcon, DownloadIcon, EditIcon, MoveIcon, NewFileIcon, NewFolderIcon, RenameIcon, SaveIcon, TrashIcon, UploadIcon} from "../components/Icons.tsx";
 import $ from "jquery";
 import RemoteDirectoryTable from "../components/RemoteBrowser/RemoteDirectoryTable.tsx";
-import PathBreadcrumb from "../components/RemoteBrowser/PathBreadcrumbs.tsx";
 import Console from "../components/RemoteBrowser/Console.tsx";
 import ConnectionManager, {EmptyConnection} from "../assets/ts/ConnectionManager.ts";
 import {useNavigate, useParams} from "react-router-dom";
@@ -42,56 +41,45 @@ export default function Browser()
     return (
         <>
             <ContextMenu/>
-            <div className={"flex flex-col w-[calc(100%_-_3rem)] mx-auto max-h-[90vh] "}>
-                {(() =>
-                {
-                    switch (GetSettings()?.general_settings?.panel_settings?.top?.content ?? -1)
+            <div className={"flex flex-col w-[calc(100%_-_3rem)] mx-auto max-h-[90vh] h-auto mx-auto"}>
+                <div id={"top-panel"}>
+                    {(() =>
                     {
-                        case ContentType.RemoteFilesystem:
-                            return (
-                                <>
-                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                        switch (GetSettings()?.general_settings?.panel_settings?.top?.content ?? -1)
+                        {
+                            case ContentType.RemoteFilesystem:
+                                return (
                                     <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                </>
-                            );
-                        case ContentType.LocalFilesystem:
-                            return (
-                                <>
-                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                );
+                            case ContentType.LocalFilesystem:
+                                return (
                                     <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                </>
-                            );
-                        case ContentType.RemoteTerminal:
-                            return <Console connection={connection}/>;
-                        case ContentType.LocalTerminal:
-                            return <Console connection={connection}/>;
-                        case ContentType.CodeEditor:
-                            return <Console connection={connection}/>;
-                        case ContentType.None:
-                        default:
-                            return <></>;
-                    }
-                })()}
-                <div className={"flex flex-row flex-grow flex-shrink max-h-[70vh]"}>
-
-                    <div className={"flex flex-col w-[calc(100%_-_40px)] m-0"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None ? "none" : ""}}>
+                                );
+                            case ContentType.RemoteTerminal:
+                                return <Console connection={connection}/>;
+                            case ContentType.LocalTerminal:
+                                return <Console connection={connection}/>;
+                            case ContentType.CodeEditor:
+                                return <Console connection={connection}/>;
+                            case ContentType.None:
+                            default:
+                                return <></>;
+                        }
+                    })()}
+                </div>
+                <div id={"middle-panels"} className={"flex flex-row overflow-hidden"}>
+                    <div id={"left-panel"} className={"flex flex-col w-[calc(100%_-_40px)] m-0"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None ? "none" : ""}}>
                         {(() =>
                         {
                             switch (GetSettings()?.general_settings?.panel_settings?.left?.content ?? -1)
                             {
                                 case ContentType.RemoteFilesystem:
                                     return (
-                                        <>
-                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
-                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                        </>
+                                        <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
                                     );
                                 case ContentType.LocalFilesystem:
                                     return (
-                                        <>
-                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
-                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                        </>
+                                        <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
                                     );
                                 case ContentType.RemoteTerminal:
                                     return <Console connection={connection}/>;
@@ -103,41 +91,18 @@ export default function Browser()
                             }
                         })()}
                     </div>
-
-                    <div className={"flex flex-col mt-auto max-h-[calc(75vh_-_120px)] h-[100vh]"}>
-                        <Tooltip content={"Collapse Top Panel"} placement={"top"}>
-                            <Button variant={"light"} className={"h-8 w-[100%] my-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.top?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-[-90deg]"}/> </Button>
-                        </Tooltip>
-                        <div className={"flex flex-row h-[100%] justify-center"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None || GetSettings()?.general_settings?.panel_settings?.right?.content === ContentType.None ? "none" : ""}}>
-                            <Tooltip content={"Collapse Left Panel"} placement={"left"}>
-                                <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.left?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-180"}/> </Button>
-                            </Tooltip>
-                            <Tooltip content={"Collapse Right Panel"} placement={"right"}>
-                                <Button variant={"light"} className={"h-full w-0 min-w-1 mx-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.right?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5}/> </Button>
-                            </Tooltip>
-                        </div>
-                        <Tooltip content={"Collapse Bottom Panel"} placement={"top"}>
-                            <Button variant={"light"} className={"h-8 w-[100%] my-1"} style={{display: GetSettings()?.general_settings?.panel_settings?.bottom?.content === ContentType.None ? "none" : ""}}> <ClosePanelIcon opacity={.5} className={"rotate-90"}/> </Button>
-                        </Tooltip>
-                    </div>
-                    <div className={"flex flex-col w-[calc(100%_-_40px)] m-0"} style={{display: GetSettings()?.general_settings?.panel_settings?.right?.content === ContentType.None ? "none" : ""}}>
+                    <div id={"right-panel"} className={"flex flex-col w-[calc(100%_-_40px)] m-0"} style={{display: GetSettings()?.general_settings?.panel_settings?.right?.content === ContentType.None ? "none" : ""}}>
                         {(() =>
                         {
                             switch (GetSettings()?.general_settings?.panel_settings?.right?.content ?? -1)
                             {
                                 case ContentType.RemoteFilesystem:
                                     return (
-                                        <>
-                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
-                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                        </>
+                                        <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
                                     );
                                 case ContentType.LocalFilesystem:
                                     return (
-                                        <>
-                                            <PathBreadcrumb path={path} onPathSelected={setPath}/>
-                                            <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                        </>
+                                        <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
                                     );
                                 case ContentType.RemoteTerminal:
                                     return <Console connection={connection}/>;
@@ -150,33 +115,29 @@ export default function Browser()
                         })()}
                     </div>
                 </div>
-                {(() =>
-                {
-                    switch (GetSettings()?.general_settings?.panel_settings?.bottom?.content ?? -1)
+                <div id={"bottom-panel"}>
+                    {(() =>
                     {
-                        case ContentType.RemoteFilesystem:
-                            return (
-                                <>
-                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                        switch (GetSettings()?.general_settings?.panel_settings?.bottom?.content ?? -1)
+                        {
+                            case ContentType.RemoteFilesystem:
+                                return (
                                     <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                </>
-                            );
-                        case ContentType.LocalFilesystem:
-                            return (
-                                <>
-                                    <PathBreadcrumb path={path} onPathSelected={setPath}/>
+                                );
+                            case ContentType.LocalFilesystem:
+                                return (
                                     <RemoteDirectoryTable onPathChange={setPath} path={path} connection={connection}/>
-                                </>
-                            );
-                        case ContentType.RemoteTerminal:
-                            return <Console connection={connection}/>;
-                        case ContentType.LocalTerminal:
-                            return <Console connection={connection}/>;
-                        case ContentType.None:
-                        default:
-                            return <></>;
-                    }
-                })()}
+                                );
+                            case ContentType.RemoteTerminal:
+                                return <Console connection={connection}/>;
+                            case ContentType.LocalTerminal:
+                                return <Console connection={connection}/>;
+                            case ContentType.None:
+                            default:
+                                return <></>;
+                        }
+                    })()}
+                </div>
             </div>
         </>
     );
@@ -190,7 +151,7 @@ function ContextMenu()
         <div
             id={"context-menu"}
             className={
-                "w-full max-w-[260px] px-1 py-2 rounded-small absolute z-10 shadow-small bg-[rgba(24_,_24_,_27_,_0.9)] backdrop-blur-sm transition-[opacity,scale,transform] max-h-[350px] overflow-y-scroll " +
+                "w-full max-w-[260px] px-1 py-2 rounded-small absolute z-10 shadow-small dark:bg-[rgba(24_,_24_,_27_,_0.9)] backdrop-blur-sm transition-[opacity,scale,transform] max-h-[350px] overflow-y-scroll " +
                 (isContextMenuOpen ? "opacity-1 pointer-events-all scale-100" : "opacity-0 pointer-events-none scale-90 transform-gpu")
             }
             style={{
