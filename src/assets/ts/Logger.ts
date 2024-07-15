@@ -3,28 +3,43 @@ import {invoke} from "@tauri-apps/api/tauri";
 /**
  * Interface for the log message
  */
-interface LogMessage
-{
+export interface LogMessage {
     message: string;
-    type: string,
+    type: LogType,
     args: any[];
 }
 
-export default class Log
-{
+export enum LogType {
+    DEBUG,
+    INFO,
+    WARN,
+    ERROR
+}
+
+export interface LogHistoryRequest {
+    from?: Date,
+    to?: Date,
+    types?: LogType[]
+    limit?: number,
+    query?: string
+}
+
+
+export default class Log {
+
+
     /**
      * Log a debug message
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static debug(message: string, ...args: any[])
-    {
-        const msg: LogMessage = this.buildMessage(message, args, "DEBUG");
+    static debug(message: string, ...args: any[]) {
+        const msg: LogMessage = this.buildMessage(message, args, LogType.DEBUG);
         console.debug(`%c[${msg.type}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: 0, arguments: JSON.stringify(msg.args)});
+        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
     }
 
     /**
@@ -32,14 +47,13 @@ export default class Log
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static info(message: string, ...args: any[])
-    {
-        const msg: LogMessage = this.buildMessage(message, args, "INFO");
+    static info(message: string, ...args: any[]) {
+        const msg: LogMessage = this.buildMessage(message, args, LogType.INFO);
         console.info(`%c[${msg.type}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: 1, arguments: JSON.stringify(msg.args)});
+        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
     }
 
     /**
@@ -47,14 +61,13 @@ export default class Log
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static warn(message: string, ...args: any[])
-    {
-        const msg: LogMessage = this.buildMessage(message, args, "WARN");
+    static warn(message: string, ...args: any[]) {
+        const msg: LogMessage = this.buildMessage(message, args, LogType.WARN);
         console.warn(`[${msg.type}] ${msg.message}`, ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: 2, arguments: JSON.stringify(msg.args)});
+        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
     }
 
     /**
@@ -62,14 +75,13 @@ export default class Log
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static error(message: string, ...args: any[])
-    {
-        const msg: LogMessage = this.buildMessage(message, args, "ERROR");
+    static error(message: string, ...args: any[]) {
+        const msg: LogMessage = this.buildMessage(message, args, LogType.ERROR);
         console.error(`[${msg.type}] ${msg.message}`, ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: 3, arguments: JSON.stringify(msg.args)});
+        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
     }
 
     /**
@@ -79,8 +91,7 @@ export default class Log
      * @param type - The type of the log message
      * @private
      */
-    private static buildMessage(message: string, args: any[], type: string): LogMessage
-    {
+    private static buildMessage(message: string, args: any[], type: LogType): LogMessage {
         // Get the indexes of the included arguments
         const includedIndexes: number[] = message.match(/{(\d+)}/g)?.map(i => parseInt(i.replace(/[{}]/g, ""))) ?? [];
 
@@ -88,6 +99,25 @@ export default class Log
         const notIncludedArgs = args.filter((_, index) => !includedIndexes.includes(index));
 
         return {message: `${message.replace(/{(\d+)}/g, (_, number) => `${JSON.stringify(args[number])}`)}`, type, args: notIncludedArgs};
+    }
+
+    public static history(request?: LogHistoryRequest): Promise<LogMessage[]> {
+        if (!request) request = {};
+
+        const defaultStartDate = new Date();
+        defaultStartDate.setDate(defaultStartDate.getDate() - 1); // Default to 1 day ago
+
+        const option = {
+            endDate: request.to?.toISOString() ?? new Date().toISOString(),
+            startDate: request.from?.toISOString() ?? defaultStartDate.toISOString(),
+            logTypes: request.types ?? [LogType.DEBUG, LogType.INFO, LogType.WARN, LogType.ERROR],
+            limit: request.limit ?? 100,
+            query: request.query
+        }
+
+        if(!option.query || option.query === "") delete request.query;
+
+        return invoke("get_log_history", option);
     }
 
 }
