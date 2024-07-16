@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import ConnectionManager, {Connection, EmptyConnection, File} from "../../assets/ts/ConnectionManager.ts";
+import {Connection, EmptyConnection, File} from "../../assets/ts/ConnectionManager.ts";
 import {AsyncListData, useAsyncList} from "@react-stately/data";
 import {Input, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import $ from "jquery";
