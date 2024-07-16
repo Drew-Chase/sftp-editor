@@ -1,6 +1,16 @@
 use std::path::Path;
 
+use serde::{Deserialize, Serialize};
 use sqlite::State;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LogMessage {
+    id: i64,
+    message: String,
+    log_type: i8,
+    args: String,
+    created: String,
+}
 
 /// Logs a message with the given log type and saves it to a SQLite database.
 ///
@@ -66,9 +76,8 @@ pub fn initialize_log_file() {
 }
 
 #[tauri::command]
-pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: Vec<i8>, search: Option<&str>) {
-    let mut query = "SELECT * FROM `logs` WHERE `created` BETWEEN ? AND ?".to_string();
-    let mut params = vec![start_date, end_date];
+pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: Vec<i8>, search: Option<&str>) -> Result<Vec<LogMessage>, String> {
+    let mut query: String = format!("SELECT * FROM `logs` WHERE `created` BETWEEN '{}' AND '{}'", start_date, end_date);
     if log_types.len() > 0 {
         query.push_str(" AND `type` IN (");
         for (i, log_type) in log_types.iter().enumerate() {
@@ -80,31 +89,28 @@ pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: 
         query.push_str(")");
     }
     if let Some(q) = search {
-        query.push_str(" AND `message` LIKE ? OR `arguments` LIKE ?");
-        params.push(q);
-        params.push(q);
+        query.push_str(format!(" AND `message` LIKE %{search}% OR `arguments` LIKE %{search}%", search = q).as_str());
     }
-    query.push_str(" ORDER BY `created` DESC LIMIT ?");
-    let limit = limit.to_string();
-    let limit = limit.as_str();
-    params.push(limit);
+    query.push_str(format!(" ORDER BY `created` DESC LIMIT {}", limit).as_str());
     match sqlite::open(std::env::var("LOG_FILE_PATH").unwrap()) {
-        Ok(connection) => {
-            match connection.prepare(query.as_str()) {
+        Ok(conn) => {
+            match conn.prepare(query) {
                 Ok(mut statement) => {
-                    loop {
-                        for (i, param) in params.iter().enumerate() {
-                            statement.bind((i + 1, param.to_owned())).unwrap();
-                        }
-                        if statement.next().unwrap() == State::Done
-                        {
-                            break;
-                        }
+                    let mut logs: Vec<LogMessage> = Vec::new();
+                    while let State::Row = statement.next().unwrap() {
+                        logs.push(LogMessage {
+                            id: statement.read::<i64,usize>(0).map_err(|e|format!("Failed to get column from database: {}", e.to_string()))?,
+                            log_type: statement.read::<i64,usize>(1).map_err(|e|format!("Failed to get column from database: {}", e.to_string()))? as i8,
+                            message: statement.read::<String,usize>(2).map_err(|e|format!("Failed to get column from database: {}", e.to_string()))?,
+                            args: statement.read::<String,usize>(3).map_err(|e|format!("Failed to get column from database: {}", e.to_string()))?,
+                            created: statement.read::<String,usize>(4).map_err(|e|format!("Failed to get column from database: {}", e.to_string()))?,
+                        });
                     }
+                    return Ok(logs);
                 }
-                Err(e) => eprintln!("Error preparing log statement: {}", e)
+                Err(e) => Err(format!("Error executing log query: {}", e))
             }
         }
-        Err(e) => eprintln!("Error creating log file: {}", e)
+        Err(e) => Err(format!("Error creating log file: {}", e))
     }
 }
