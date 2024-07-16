@@ -4,6 +4,8 @@ import {invoke} from "@tauri-apps/api/tauri";
  * Interface for the log message
  */
 export interface LogMessage {
+    id?: number;
+    created?: Date;
     message: string;
     type: LogType,
     args: any[];
@@ -101,15 +103,15 @@ export default class Log {
         return {message: `${message.replace(/{(\d+)}/g, (_, number) => `${JSON.stringify(args[number])}`)}`, type, args: notIncludedArgs};
     }
 
-    public static history(request?: LogHistoryRequest): Promise<LogMessage[]> {
+    public static async history(request?: LogHistoryRequest): Promise<LogMessage[]> {
         if (!request) request = {};
 
         const defaultStartDate = new Date();
         defaultStartDate.setDate(defaultStartDate.getDate() - 1); // Default to 1 day ago
 
         const option = {
-            endDate: request.to?.toISOString() ?? new Date().toISOString(),
-            startDate: request.from?.toISOString() ?? defaultStartDate.toISOString(),
+            endDate: request.to?.toISOString() ?? new Date().toISOString().replace("T", " ").replace("Z", ""),
+            startDate: request.from?.toISOString() ?? defaultStartDate.toISOString().replace("T", " ").replace("Z", ""),
             logTypes: request.types ?? [LogType.DEBUG, LogType.INFO, LogType.WARN, LogType.ERROR],
             limit: request.limit ?? 100,
             query: request.query
@@ -117,7 +119,15 @@ export default class Log {
 
         if(!option.query || option.query === "") delete request.query;
 
-        return invoke("get_log_history", option);
+        let response = await invoke("get_log_history", option) as any[];
+        response = response.map((log: any) => {
+            log.created = new Date(log.created);
+            log.type = log.log_type;
+            log.args = JSON.parse(log.args);
+            delete log.log_type;
+            return log;
+        }) as LogMessage[];
+        return response
     }
 
 }
