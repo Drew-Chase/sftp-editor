@@ -4,7 +4,8 @@ import {LogHistoryRequest, LogType} from "../assets/ts/Logger.ts";
 
 export default function LogViewer() {
     let filter: LogHistoryRequest = {
-        types: [LogType.INFO, LogType.WARN, LogType.ERROR]
+        types: [LogType.DEBUG,LogType.INFO, LogType.WARN, LogType.ERROR],
+        limit: 10,
     };
     return (
         <div className={"m-8"}>
