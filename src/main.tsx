@@ -14,6 +14,7 @@ import ConnectionsList from "./pages/ConnectionsList.tsx";
 import KeyboardShortcuts from "./assets/ts/KeyboardShortcuts.ts";
 import ConnectionManager from "./assets/ts/ConnectionManager.ts";
 import LogViewer from "./pages/LogViewer.tsx";
+import Log from "./assets/ts/Logger.ts";
 
 await GetSettings();
 applyTheme();
@@ -29,10 +30,10 @@ ReactDOM.createRoot($("#root")[0]!).render(
 
 function PageContent()
 {
-    // Log.debug("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.info("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.warn("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.error("Test message: {0}", "Hello, World!", {test: 0})
+    Log.debug("Test message: {0}", "Hello, World!", {test: 0})
+    Log.info("Test message: {0}", "Hello, World!", {test: 0})
+    Log.warn("Test message: {0}", "Hello, World!", {test: 0})
+    Log.error("Test message: {0}", "Hello, World!", {test: 0})
     // return;
     // Initialize the singletons
     KeyboardShortcuts.instance;
