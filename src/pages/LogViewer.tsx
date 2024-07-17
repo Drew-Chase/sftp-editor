@@ -1,80 +1,139 @@
-import {Switch} from "@nextui-org/react";
+import {Autocomplete, AutocompleteItem, DateRangePicker, Switch} from "@nextui-org/react";
 import Log from "../components/LogView/Log.tsx";
-import {LogHistoryRequest, LogType} from "../assets/ts/Logger.ts";
+import {useState} from "react";
+import {parseZonedDateTime} from "@internationalized/date";
 
-export default function LogViewer() {
-    let filter: LogHistoryRequest = {
-        types: [LogType.DEBUG,LogType.INFO, LogType.WARN, LogType.ERROR],
-        limit: 100,
-    };
+export default function LogViewer()
+{
+    // Log.debug("Test message: {0}", "Hello, World!", {test: 0})
+    // Log.info("Test message: {0}", "Hello, World!", {test: 0})
+    // Log.warn("Test message: {0}", "Hello, World!", {test: 0})
+    // Log.error("Test message: {0}", "Hello, World!", {test: 0})
+    const [showDebug, setShowDebug] = useState<boolean>(true);
+    const [showInfo, setShowInfo] = useState<boolean>(true);
+    const [showWarn, setShowWarn] = useState<boolean>(true);
+    const [showError, setShowError] = useState<boolean>(true);
+    const [limit, setLimit] = useState<number>(10);
+
     return (
         <div className={"m-8"}>
             <div className={"flex-row flex mb-3 gap-4"}>
-                <h1 className={"text-4xl w-full"}>Log Viewer</h1>
-                <Switch
-                    isSelected={filter.types?.includes(LogType.DEBUG) ?? false}
-                    className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
-                    onValueChange={
-                        value => {
-                            if (value) {
-                                if (!filter.types?.includes(LogType.DEBUG))
-                                    filter.types?.push(LogType.DEBUG)
-                            } else
-                                filter.types?.splice(filter.types.indexOf(LogType.DEBUG), 1)
-                        }
-                    }
-                >
-                    Debug
-                </Switch>
-                <Switch
-                    isSelected={filter.types?.includes(LogType.INFO) ?? true}
-                    className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
-                    onValueChange={
-                        value => {
-                            if (value) {
-                                if (!filter.types?.includes(LogType.INFO))
-                                    filter.types?.push(LogType.INFO)
-                            } else
-                                filter.types?.splice(filter.types.indexOf(LogType.INFO), 1)
+                <h1 className={"text-4xl w-full sm:text-xl md:text-2xl lg:text-4xl"}>Log Viewer</h1>
+                <div className={"flex flex-col gap-3"}>
+                    <div className={"flex flex-row gap-3"}>
+                        <Switch
+                            isSelected={showDebug}
+                            size={"sm"}
+                            className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
+                            onValueChange={
+                                value =>
+                                {
+                                    setShowDebug(value);
+                                }
+                            }
+                        >
+                            Debug
+                        </Switch>
+                        <Switch
+                            isSelected={showInfo}
+                            size={"sm"}
+                            className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
+                            onValueChange={
+                                value =>
+                                {
+                                    setShowInfo(value);
+                                }
+                            }
+                        >
+                            Info
+                        </Switch>
+                        <Switch
+                            isSelected={showWarn}
+                            size={"sm"}
+                            className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
+                            onValueChange={
+                                value =>
+                                {
+                                    setShowWarn(value);
+                                }
+                            }
+                        >
+                            Warnings
+                        </Switch>
+                        <Switch
+                            isSelected={showError}
+                            size={"sm"}
+                            className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
+                            onValueChange={
+                                value =>
+                                {
+                                    setShowError(value);
+                                }
+                            }
+                        >
+                            Errors
+                        </Switch>
+                    </div>
+                    <div className={"flex flex-row w-full gap-3"}>
+                        <DateRangePicker
+                            label={"Time Range"}
+                            hideTimeZone
+                            visibleMonths={2}
+                            classNames={{
+                                base: "w-90"
+                            }}
+                            defaultValue={(() =>
+                            {
+                                let end: Date | string = new Date();
+                                let start: Date | string = new Date(end.setDate(end.getDate() - 1));
 
-                        }
-                    }
-                >
-                    Info
-                </Switch>
-                <Switch
-                    isSelected={filter.types?.includes(LogType.WARN) ?? true}
-                    className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
-                    onValueChange={
-                        value => {
-                            if (value) {
-                                if (!filter.types?.includes(LogType.WARN))
-                                    filter.types?.push(LogType.WARN)
-                            } else
-                                filter.types?.splice(filter.types.indexOf(LogType.WARN), 1)
+                                end = end.toISOString();
+                                start = start.toISOString();
 
-                        }
-                    }
-                >
-                    Warnings
-                </Switch>
-                <Switch
-                    isSelected={filter.types?.includes(LogType.ERROR) ?? true}
-                    className={"dark:bg-[#101010] hover:dark:bg-[#151515] bg-[#c0c0c0] hover:bg-[#c9c9c9] rounded-md p-3 transition-all"}
-                    onValueChange={
-                        value => {
-                            if (value) {
-                                if (!filter.types?.includes(LogType.ERROR))
-                                    filter.types?.push(LogType.ERROR)
-                            } else
-                                filter.types?.splice(filter.types.indexOf(LogType.ERROR), 1)
-                        }
-                    }
-                >
-                    Errors
-                </Switch>
+                                end = `${end.split("T")[0]}T${end.split("T")[1].split(".")[0]}`;
+                                start = `${start.split("T")[0]}T${start.split("T")[1].split(".")[0]}`;
+
+
+                                return {
+                                    start: parseZonedDateTime(`${start}[America/New_York]`),
+                                    end: parseZonedDateTime(`${end}[America/New_York]`)
+                                };
+                            })()}
+                        />
+                        <Autocomplete
+                            label={"Limit"}
+                            defaultSelectedKey={limit}
+                            allowsCustomValue
+                            classNames={{
+                                base: "w-32"
+                            }}
+                            onValueChange={value =>
+                            {
+                                console.log(`Value Changed: ${value}`)
+                                const limit = parseInt(value);
+                                if (limit && !isNaN(limit))
+                                    setLimit(limit);
+                            }}
+                            onSelectionChange={value =>{
+                                console.log(`Selection Changed: ${value}`)
+                                if(value === null)return;
+                                const limit = parseInt(value.toString());
+                                if (limit && !isNaN(limit))
+                                    setLimit(limit);
+                            }}
+                        >
+
+                            <AutocompleteItem key={10}>10</AutocompleteItem>
+                            <AutocompleteItem key={25}>25</AutocompleteItem>
+                            <AutocompleteItem key={50}>50</AutocompleteItem>
+                            <AutocompleteItem key={100}>100</AutocompleteItem>
+                            <AutocompleteItem key={500}>500</AutocompleteItem>
+                            <AutocompleteItem key={1000}>1000</AutocompleteItem>
+                        </Autocomplete>
+                    </div>
+                </div>
             </div>
-            <Log filter={filter}/>
+            <Log showDebug={showDebug} showInfo={showInfo} showWarn={showWarn} showError={showError} limit={limit}/>
         </div>
-    )
+    );
 }
