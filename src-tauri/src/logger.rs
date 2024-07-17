@@ -77,6 +77,8 @@ pub fn initialize_log_file() {
 
 #[tauri::command]
 pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: Vec<i8>, search: Option<&str>) -> Result<Vec<LogMessage>, String> {
+    println!("get_log_history called");
+    let function_start_time = std::time::Instant::now();
     let mut query: String = format!("SELECT * FROM `logs` WHERE `created` BETWEEN '{}' AND '{}'", start_date, end_date);
     if log_types.len() > 0 {
         query.push_str(" AND `type` IN (");
@@ -92,7 +94,7 @@ pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: 
         query.push_str(format!(" AND `message` LIKE %{search}% OR `arguments` LIKE %{search}%", search = q).as_str());
     }
     query.push_str(format!(" ORDER BY `created` DESC LIMIT {}", limit).as_str());
-    match sqlite::open(std::env::var("LOG_FILE_PATH").unwrap()) {
+    let result:Result<Vec<LogMessage>, String> = match sqlite::open(std::env::var("LOG_FILE_PATH").unwrap()) {
         Ok(conn) => {
             match conn.prepare(query) {
                 Ok(mut statement) => {
@@ -112,5 +114,10 @@ pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: 
             }
         }
         Err(e) => Err(format!("Error creating log file: {}", e))
-    }
+    };
+    
+    
+    println!("get_log_history took: {}ms", function_start_time.elapsed().as_millis());
+    
+   return result;
 }
