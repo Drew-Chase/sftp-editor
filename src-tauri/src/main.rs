@@ -9,7 +9,7 @@ use app_settings::{get_settings, save_settings};
 use connection_manager::{add_connection, delete_connection, get_connection_by_id, get_connections, initialize, set_default, update_connection, update_join};
 use sftp_manager::{list, send_ssh_command, test_connection};
 
-use crate::logger::{initialize_log_file, log, get_log_history};
+use crate::logger::{get_log_history, initialize_log_file, log};
 use crate::sftp_manager::download_file;
 
 // use crate::connection_manager::create_tmp_connection;
@@ -30,11 +30,19 @@ fn main() {
             std::process::exit(1);
         }
     }
-    // create_tmp_connection();
-    // return;
 
     initialize_log_file();
 
+    match get_log_history("2024-07-10", "2024-07-19", 100, vec![1, 2, 3], None){
+        Ok(logs) => {
+            for log in logs {
+                println!("{:?}", log);
+            }
+        }
+        Err(e) => {
+            println!("{}", e);
+        }
+    }
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             get_settings,
