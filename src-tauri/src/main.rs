@@ -33,16 +33,6 @@ fn main() {
 
     initialize_log_file();
 
-    match get_log_history("2024-07-10", "2024-07-19", 100, vec![1, 2, 3], None){
-        Ok(logs) => {
-            for log in logs {
-                println!("{:?}", log);
-            }
-        }
-        Err(e) => {
-            println!("{}", e);
-        }
-    }
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             get_settings,
