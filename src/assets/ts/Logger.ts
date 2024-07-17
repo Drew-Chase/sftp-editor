@@ -3,7 +3,8 @@ import {invoke} from "@tauri-apps/api/tauri";
 /**
  * Interface for the log message
  */
-export interface LogMessage {
+export interface LogMessage
+{
     id?: number;
     created?: Date;
     message: string;
@@ -11,14 +12,16 @@ export interface LogMessage {
     args: any[];
 }
 
-export enum LogType {
+export enum LogType
+{
     DEBUG,
     INFO,
     WARN,
     ERROR
 }
 
-export interface LogHistoryRequest {
+export interface LogHistoryRequest
+{
     from?: Date,
     to?: Date,
     types?: LogType[]
@@ -27,7 +30,8 @@ export interface LogHistoryRequest {
 }
 
 
-export default class Log {
+export default class Log
+{
 
 
     /**
@@ -35,7 +39,8 @@ export default class Log {
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static debug(message: string, ...args: any[]) {
+    static debug(message: string, ...args: any[])
+    {
         const msg: LogMessage = this.buildMessage(message, args, LogType.DEBUG);
         console.debug(`%c[${msg.type}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
@@ -49,7 +54,8 @@ export default class Log {
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static info(message: string, ...args: any[]) {
+    static info(message: string, ...args: any[])
+    {
         const msg: LogMessage = this.buildMessage(message, args, LogType.INFO);
         console.info(`%c[${msg.type}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
@@ -63,7 +69,8 @@ export default class Log {
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static warn(message: string, ...args: any[]) {
+    static warn(message: string, ...args: any[])
+    {
         const msg: LogMessage = this.buildMessage(message, args, LogType.WARN);
         console.warn(`[${msg.type}] ${msg.message}`, ...msg.args);
 
@@ -77,7 +84,8 @@ export default class Log {
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static error(message: string, ...args: any[]) {
+    static error(message: string, ...args: any[])
+    {
         const msg: LogMessage = this.buildMessage(message, args, LogType.ERROR);
         console.error(`[${msg.type}] ${msg.message}`, ...msg.args);
 
@@ -93,7 +101,8 @@ export default class Log {
      * @param type - The type of the log message
      * @private
      */
-    private static buildMessage(message: string, args: any[], type: LogType): LogMessage {
+    private static buildMessage(message: string, args: any[], type: LogType): LogMessage
+    {
         // Get the indexes of the included arguments
         const includedIndexes: number[] = message.match(/{(\d+)}/g)?.map(i => parseInt(i.replace(/[{}]/g, ""))) ?? [];
 
@@ -103,7 +112,8 @@ export default class Log {
         return {message: `${message.replace(/{(\d+)}/g, (_, number) => `${JSON.stringify(args[number])}`)}`, type, args: notIncludedArgs};
     }
 
-    public static async history(request?: LogHistoryRequest): Promise<LogMessage[]> {
+    public static history(request?: LogHistoryRequest, callback?: (logs: LogMessage[]) => void)
+    {
         if (!request) request = {};
 
         const defaultStartDate = new Date();
@@ -115,19 +125,26 @@ export default class Log {
             logTypes: request.types ?? [LogType.DEBUG, LogType.INFO, LogType.WARN, LogType.ERROR],
             limit: request.limit ?? 100,
             query: request.query
-        }
+        };
 
-        if(!option.query || option.query === "") delete request.query;
+        if (!option.query || option.query === "") delete request.query;
 
-        let response = await invoke("get_log_history", option) as any[];
-        response = response.map((log: any) => {
-            log.created = new Date(log.created);
-            log.type = log.log_type;
-            log.args = JSON.parse(log.args);
-            delete log.log_type;
-            return log;
-        }) as LogMessage[];
-        return response
+        (invoke("get_log_history", option) as Promise<any[]>)
+            .then((response: any[]) =>
+            {
+                return response.map((log: any) =>
+                {
+                    log.created = new Date(log.created);
+                    log.type = log.log_type;
+                    log.args = JSON.parse(log.args);
+                    delete log.log_type;
+                    return log;
+                }) as LogMessage[];
+            })
+            .then((logs: LogMessage[]) =>
+            {
+                if (callback) callback(logs);
+            });
+
     }
-
 }
