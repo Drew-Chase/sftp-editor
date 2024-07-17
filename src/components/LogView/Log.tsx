@@ -1,6 +1,7 @@
 import {default as Logger, LogHistoryRequest, LogMessage} from "../../assets/ts/Logger.ts";
 import {useEffect, useState} from "react";
-import {Spinner} from "@nextui-org/react";
+import {Accordion, AccordionItem, Spinner} from "@nextui-org/react";
+import JsonHierarchyComponent from "./JsonHierarchyComponent.tsx";
 
 export default function Log({filter}: { filter: LogHistoryRequest })
 {
@@ -26,7 +27,7 @@ export default function Log({filter}: { filter: LogHistoryRequest })
             {!loading && logs.map((log: LogMessage) =>
                 {
                     return (
-                        <div
+                        <Accordion
                             key={log.id}
                             className={"p-2 border-b dark:border-[#303030] border-[#ccc] dark:hover:bg-[#303030] hover:bg-[#f0f0f0] transition-all"}
                             style={
@@ -49,10 +50,10 @@ export default function Log({filter}: { filter: LogHistoryRequest })
                                         }
                                     })()
                                 }
-                                
+
                             }
                         >
-                            <div className={"flex gap-2"}>
+                            <AccordionItem isCompact title={log.message} startContent={
                                 <div className={"font-light"}>{
                                     (() =>
                                     {
@@ -71,18 +72,19 @@ export default function Log({filter}: { filter: LogHistoryRequest })
                                     })()
                                 }
                                 </div>
-                                <span className={"font-medium"}>{log.message}</span>
-                            </div>
-                            <div className={"flex gap-2 hidden"}>
-                                {log.args.map((arg: any, index: number) =>
+                            }
+                            >
+                                {log.args.length === 0 ? <span>No additional data</span> : log.args.map((arg: any, index: number) =>
                                 {
+                                    const supportedTypes = ["number", "string", "boolean"];
                                     return (
-                                        <span key={index} className={"text-xs"}>{JSON.stringify(arg)}</span>
+                                        <div key={index} className={"text-xs"}>
+                                            {supportedTypes.includes(typeof arg) ? arg : <JsonHierarchyComponent content={arg}/>}
+                                        </div>
                                     );
                                 })}
-                            </div>
-
-                        </div>);
+                            </AccordionItem>
+                        </Accordion>);
 
                 }
             )
