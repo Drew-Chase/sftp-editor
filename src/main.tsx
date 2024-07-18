@@ -14,6 +14,7 @@ import ConnectionsList from "./pages/ConnectionsList.tsx";
 import KeyboardShortcuts from "./assets/ts/KeyboardShortcuts.ts";
 import ConnectionManager from "./assets/ts/ConnectionManager.ts";
 import LogViewer from "./pages/LogViewer.tsx";
+import Log from "./assets/ts/Logger.ts";
 
 await GetSettings();
 applyTheme();
@@ -32,29 +33,28 @@ function PageContent()
     // Initialize the singletons
     KeyboardShortcuts.instance;
     ConnectionManager.instance;
+    Log.initialize();
 
     // Disable the default right-click context menu
     $(document).on("contextmenu", (e) => e.preventDefault());
 
 
-
-
     const navigate = useNavigate();
-    useEffect(() =>
-    {
-        if (ConnectionManager.instance.hasDefault())
-        {
-            ConnectionManager.instance.connect(ConnectionManager.instance.getDefault());
-
-            // This uses the useNavigate hook from react-router-dom to navigate to the connection page.
-            // The function looks a little funny because it's a hook that returns a FunctionComponent.
-            // For more information on useNavigate see: https://reactrouter.com/en/main/hooks/use-navigate
-            navigate(`/connection/${ConnectionManager.instance.getDefault().id}`);
-        } else
-        {
-            navigate("/site-browser/new");// Redirect to the connections list page.
-        }
-    }, []);
+    // useEffect(() =>
+    // {
+    //     if (ConnectionManager.instance.hasDefault())
+    //     {
+    //         ConnectionManager.instance.connect(ConnectionManager.instance.getDefault());
+    //
+    //         // This uses the useNavigate hook from react-router-dom to navigate to the connection page.
+    //         // The function looks a little funny because it's a hook that returns a FunctionComponent.
+    //         // For more information on useNavigate see: https://reactrouter.com/en/main/hooks/use-navigate
+    //         navigate(`/connection/${ConnectionManager.instance.getDefault().id}`);
+    //     } else
+    //     {
+    //         navigate("/site-browser/new");// Redirect to the connections list page.
+    //     }
+    // }, []);
 
     return (
         <>
@@ -76,5 +76,21 @@ function PageContent()
 
 function Home()
 {
+    const navigate = useNavigate();
+    useEffect(() =>
+    {
+        if (ConnectionManager.instance.hasDefault())
+        {
+            ConnectionManager.instance.connect(ConnectionManager.instance.getDefault());
+
+            // This uses the useNavigate hook from react-router-dom to navigate to the connection page.
+            // The function looks a little funny because it's a hook that returns a FunctionComponent.
+            // For more information on useNavigate see: https://reactrouter.com/en/main/hooks/use-navigate
+            navigate(`/connection/${ConnectionManager.instance.getDefault().id}`);
+        } else
+        {
+            navigate("/site-browser/new");// Redirect to the connections list page.
+        }
+    }, []);
     return (<></>);
 }
