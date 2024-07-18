@@ -1,8 +1,16 @@
-import {Button, Dropdown, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger} from "@nextui-org/react";
+import {Button, Dropdown, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Kbd} from "@nextui-org/react";
 import {useNavigate} from "react-router-dom";
+import KeyboardShortcuts, {ModifierKey} from "../../assets/ts/KeyboardShortcuts.ts";
 
-export default function HelpMenuBarComponent() {
+export default function HelpMenuBarComponent()
+{
     const navigate = useNavigate();
+    KeyboardShortcuts.instance.push({
+        key: ["L"],
+        description: "Open the logs page",
+        modifierKeys: [ModifierKey.Control, ModifierKey.Shift],
+        callback: () => navigate("/logs")
+    })
     return (
         <Dropdown>
             <DropdownTrigger>
@@ -46,8 +54,17 @@ export default function HelpMenuBarComponent() {
                     key={"view-logs"}
                     description={"view the logs for the app"}
                     onClick={() => navigate("/logs")}
+                    shortcut={<Kbd keys={["command", "shift"]}>L</Kbd>}
                 >
                     View Logs
+                </DropdownItem>
+                <DropdownItem
+                    key={"view-logs"}
+                    description={"view the logs for the app"}
+                    onClick={() => navigate("/logs")}
+                    shortcut={<Kbd keys={["command", "shift"]}>L</Kbd>}
+                >
+                    Shortcuts
                 </DropdownItem>
                 <DropdownItem
                     key={"about-app"}
@@ -58,5 +75,5 @@ export default function HelpMenuBarComponent() {
                 </DropdownItem>
             </DropdownMenu>
         </Dropdown>
-    )
+    );
 }
