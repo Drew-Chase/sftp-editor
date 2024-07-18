@@ -32,6 +32,14 @@ export interface LogHistoryRequest
 
 export default class Log
 {
+    public static initialize()
+    {
+        console.log = Log.debug;
+        console.debug = Log.debug;
+        console.info = Log.info;
+        console.warn = Log.warn;
+        console.error = Log.error;
+    }
 
 
     /**
@@ -41,8 +49,8 @@ export default class Log
      */
     static debug(message: string, ...args: any[])
     {
-        const msg: LogMessage = this.buildMessage(message, args, LogType.DEBUG);
-        console.debug(`%c[${msg.type}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
+        const msg: LogMessage = Log.buildMessage(message, args, LogType.DEBUG);
+        // console.debug_old(`%c[${msg.type}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
@@ -56,8 +64,8 @@ export default class Log
      */
     static info(message: string, ...args: any[])
     {
-        const msg: LogMessage = this.buildMessage(message, args, LogType.INFO);
-        console.info(`%c[${msg.type}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
+        const msg: LogMessage = Log.buildMessage(message, args, LogType.INFO);
+        // console.info_old(`%c[${msg.type}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
@@ -71,8 +79,8 @@ export default class Log
      */
     static warn(message: string, ...args: any[])
     {
-        const msg: LogMessage = this.buildMessage(message, args, LogType.WARN);
-        console.warn(`[${msg.type}] ${msg.message}`, ...msg.args);
+        const msg: LogMessage = Log.buildMessage(message, args, LogType.WARN);
+        // console.warn_old(`[${msg.type}] ${msg.message}`, ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
@@ -86,8 +94,8 @@ export default class Log
      */
     static error(message: string, ...args: any[])
     {
-        const msg: LogMessage = this.buildMessage(message, args, LogType.ERROR);
-        console.error(`[${msg.type}] ${msg.message}`, ...msg.args);
+        const msg: LogMessage = Log.buildMessage(message, args, LogType.ERROR);
+        // console.error_old(`[${msg.type}] ${msg.message}`, ...msg.args);
 
         // Invoke the log function in the Tauri backend
         // This is non-blocking and will not halt the application
