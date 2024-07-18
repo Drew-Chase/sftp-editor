@@ -8,12 +8,18 @@ import SFTPEditorMenuBarComponent from "./MenuBar/SFTPEditorMenuBarComponent.tsx
 import HelpMenuBarComponent from "./MenuBar/HelpMenuBarComponent.tsx";
 
 
-export default function MenuBar() {
+export default function MenuBar({title,hideMenu}: {title?:string, hideMenu?: boolean })
+{
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
     return (
         <Navbar id={"window-chrome"} onMenuOpenChange={setIsMenuOpen} maxWidth={"full"} height={"32px"} classNames={{base: "m-0", wrapper: "px-0"}}>
-            <NavbarContent id={"window-menu-bar"}>
+            <NavbarContent id={"window-menu-bar"} className={!title ? "hidden" : ""}>
+                <NavbarItem>
+                    <p className={"ml-3"}>{title}</p>
+                </NavbarItem>
+            </NavbarContent>
+            <NavbarContent id={"window-menu-bar"} className={hideMenu ? "hidden" : ""}>
                 <NavbarMenuToggle aria-label={isMenuOpen ? "Close menu" : "Open menu"} className="sm:hidden"/>
                 <NavbarItem>
                     <SFTPEditorMenuBarComponent/>
