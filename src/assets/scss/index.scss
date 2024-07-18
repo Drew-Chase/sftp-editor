@@ -20,3 +20,24 @@
   background-color: #f13848;
   color: #fff;
 }
+
+kbd:has(kbd) {
+  border: none !important;
+}
+
+#logview-progress {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    max-width: var(--progress, 0%);
+    width: 100vw;
+    height: 3px;
+    background-color: #f13848;
+    border-radius: 100px;
+    z-index: 1;
+    transition: max-width var(--transition, 1s) linear;
+  }
+}
