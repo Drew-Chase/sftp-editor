@@ -40,6 +40,14 @@ export enum Key
     Tab = "Tab",
 }
 
+export enum ModifierGlifs
+{
+    Control = "⌃",
+    Shift = "⇧",
+    Alt = "⌥",
+    Meta = "⌘",
+}
+
 export default class KeyboardShortcuts
 {
     /**
