@@ -61,6 +61,11 @@ fn main() {
             set_shadow(&window, true).unwrap();
             window.set_decorations(false).unwrap();
             window.show().unwrap();
+            
+            let window = app.get_window("logger").unwrap();
+            set_shadow(&window, true).unwrap();
+            window.set_decorations(false).unwrap();
+            window.show().unwrap();
 
             Ok(())
         })
