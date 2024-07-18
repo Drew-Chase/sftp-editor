@@ -5,20 +5,15 @@ import {parseZonedDateTime} from "@internationalized/date";
 
 export default function LogViewer()
 {
-    // Log.debug("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.info("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.warn("Test message: {0}", "Hello, World!", {test: 0})
-    // Log.error("Test message: {0}", "Hello, World!", {test: 0})
     const [showDebug, setShowDebug] = useState<boolean>(true);
     const [showInfo, setShowInfo] = useState<boolean>(true);
     const [showWarn, setShowWarn] = useState<boolean>(true);
     const [showError, setShowError] = useState<boolean>(true);
-    const [limit, setLimit] = useState<number>(10);
+    const [limit, setLimit] = useState<number>(100);
 
     return (
         <div className={"m-8"}>
             <div className={"flex-row flex mb-3 gap-4"}>
-                <h1 className={"text-4xl w-full sm:text-xl md:text-2xl lg:text-4xl"}>Log Viewer</h1>
                 <div className={"flex flex-col gap-3"}>
                     <div className={"flex flex-row gap-3"}>
                         <Switch
@@ -102,33 +97,34 @@ export default function LogViewer()
                         />
                         <Autocomplete
                             label={"Limit"}
-                            defaultSelectedKey={limit}
+                            defaultSelectedKey={limit.toString()}
                             allowsCustomValue
                             classNames={{
                                 base: "w-32"
                             }}
                             onValueChange={value =>
                             {
-                                console.log(`Value Changed: ${value}`)
+                                console.debug(`Limit Filter Changed`, value);
                                 const limit = parseInt(value);
                                 if (limit && !isNaN(limit))
                                     setLimit(limit);
                             }}
-                            onSelectionChange={value =>{
-                                console.log(`Selection Changed: ${value}`)
-                                if(value === null)return;
+                            onSelectionChange={value =>
+                            {
+                                console.log(`Selection Changed: ${value}`);
+                                if (value === null) return;
                                 const limit = parseInt(value.toString());
                                 if (limit && !isNaN(limit))
                                     setLimit(limit);
                             }}
                         >
 
-                            <AutocompleteItem key={10}>10</AutocompleteItem>
-                            <AutocompleteItem key={25}>25</AutocompleteItem>
-                            <AutocompleteItem key={50}>50</AutocompleteItem>
-                            <AutocompleteItem key={100}>100</AutocompleteItem>
-                            <AutocompleteItem key={500}>500</AutocompleteItem>
-                            <AutocompleteItem key={1000}>1000</AutocompleteItem>
+                            <AutocompleteItem key={"10"}>10</AutocompleteItem>
+                            <AutocompleteItem key={"25"}>25</AutocompleteItem>
+                            <AutocompleteItem key={"50"}>50</AutocompleteItem>
+                            <AutocompleteItem key={"100"}>100</AutocompleteItem>
+                            <AutocompleteItem key={"500"}>500</AutocompleteItem>
+                            <AutocompleteItem key={"1000"}>1000</AutocompleteItem>
                         </Autocomplete>
                     </div>
                 </div>
