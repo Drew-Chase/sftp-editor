@@ -1,16 +1,29 @@
 import {default as Logger, LogMessage, LogType} from "../../assets/ts/Logger.ts";
 import {useEffect, useState} from "react";
-import {Accordion, AccordionItem, Spinner} from "@nextui-org/react";
+import {Accordion, AccordionItem, Button, Spinner} from "@nextui-org/react";
 import JsonHierarchyComponent from "./JsonHierarchyComponent.tsx";
+import $ from "jquery";
+import {PauseIcon, PlayIcon} from "../Icons.tsx";
+
+let updateProgressbar: number;
 
 export default function Log({showDebug, showInfo, showWarn, showError, limit}: { showDebug: boolean, showInfo: boolean, showWarn: boolean, showError: boolean, limit: number })
 {
     const [logs, setLogs] = useState<LogMessage[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [reloadPaused, setReloadPaused] = useState<boolean>(false);
+    const reloadSpeed = 100;
 
-
-    useEffect(() =>
+    const reload = () =>
     {
+        const progress = $("#logview-progress");
+        if (progress)
+        {
+            clearInterval(updateProgressbar);
+            progress.css("--transition", "0.2s");
+            progress.css("--progress", "0%");
+            setTimeout(() => progress.css("--transition", `${reloadSpeed / 1000}s`), 200);
+        }
         setLoading(true);
         Logger.history({
             types: [
@@ -20,11 +33,44 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit}: {
                 showError ? 3 : -1
             ].filter((type: number) => type !== -1) as LogType[],
             limit: limit
-        }, (logs: LogMessage[]) =>{
+        }, (logs: LogMessage[]) =>
+        {
             setLogs(logs);
             setLoading(false);
+            if (!reloadPaused)
+                startProgressbar();
         });
+    };
+
+
+    useEffect(() =>
+    {
+        reload();
     }, [showDebug, showInfo, showWarn, showError, limit]);
+
+
+    const startProgressbar = () =>
+    {
+        clearInterval(updateProgressbar);
+        // @ts-ignore
+        updateProgressbar = setInterval(() =>
+        {
+            const progress = $("#logview-progress");
+            if (progress)
+            {
+                const currentProgress = parseInt(progress.css("--progress")?.replace("%", "") ?? "0");
+                const newProgress = (currentProgress + 1) % 101;
+                if (newProgress === 0)
+                {
+                    progress.css("--transition", "0.2s");
+                    progress.css("--progress", "0%");
+                    setTimeout(() => progress.css("--transition", `${reloadSpeed / 1000}s`), 200);
+                    reload();
+                }
+                progress.css("--progress", `${newProgress}%`);
+            }
+        }, reloadSpeed);
+    };
 
 
     return (
@@ -83,23 +129,40 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit}: {
                             >
                                 <>
                                     <span className={"opacity-70"}>Timestamp:</span> <span>{log.created?.toLocaleString()}</span>
-                                    {log.args.length === 0 ? <span>No additional data</span> : log.args.map((arg: any, index: number) =>
+                                    {log.args.length === 0 ? <div>No additional data</div> : log.args.map((arg: any, index: number) =>
                                     {
                                         const supportedTypes = ["number", "string", "boolean"];
                                         return (
                                             <div key={index} className={"text-xs"}>
-                                                {supportedTypes.includes(typeof arg) ? arg : <JsonHierarchyComponent key={log.id?.toString()??""} content={arg}/>}
+                                                {supportedTypes.includes(typeof arg) ? arg : <JsonHierarchyComponent key={log.id?.toString() ?? ""} content={arg}/>}
                                             </div>
                                         );
                                     })}
                                 </>
                             </AccordionItem>
-                        </Accordion>);
+                        </Accordion>
+
+                    );
 
                 }
             )
             }
-
+            <div className={"fixed bottom-[4px] left-4 right-4 flex flex-row items-center gap-2"}>
+                <div className={"relative w-full"}>
+                    <div id={"logview-progress"} className={"h-[3px] bg-[#101010] rounded-full w-full"}></div>
+                </div>
+                <Button className={"h-[16px] w-[16px] min-w-0"} onPress={() =>
+                {
+                    setReloadPaused(!reloadPaused);
+                    if (reloadPaused)
+                    {
+                        startProgressbar();
+                    } else
+                    {
+                        clearInterval(updateProgressbar);
+                    }
+                }}>{reloadPaused ? <PlayIcon size={12}/> : <PauseIcon size={12}/>}</Button>
+            </div>
         </div>
     );
 }
