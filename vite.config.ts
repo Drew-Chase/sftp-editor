@@ -23,5 +23,13 @@ export default defineConfig(async () => ({
         supported: {
             "top-level-await": true //browsers can handle top-level-await features
         }
+    },
+    build: {
+        rollupOptions: {
+            input: {
+                app: "index.html",
+                logview: "log-window.html"
+            }
+        }
     }
 }));
