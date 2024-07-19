@@ -8,7 +8,7 @@ import {applyTheme} from "./assets/ts/Theme.ts";
 import {GetSettings} from "./assets/ts/Settings.ts";
 import KeyboardShortcuts from "./assets/ts/KeyboardShortcuts.ts";
 import LogViewer from "./pages/LogViewer.tsx";
-import Log from "./assets/ts/Logger.ts";
+import Log, {closeLogWindow} from "./assets/ts/Logger.ts";
 import MenuBar from "./components/MenuBar.tsx";
 
 
@@ -26,15 +26,20 @@ function PageContent()
     GetSettings();
     applyTheme();
     // Initialize the singletons
-    KeyboardShortcuts.instance;
     Log.initialize();
+    KeyboardShortcuts.instance;
 
     // Disable the default right-click context menu
     $(document).on("contextmenu", (e) => e.preventDefault());
 
     return (
         <>
-            <MenuBar title={"Log Viewer"} hideMenu/>
+            <MenuBar title={"Log Viewer"} hideMenu actions={{
+                minimize: false,
+                maximize: false,
+                close: true,
+                onClose: () => {closeLogWindow()}
+            }}/>
             <LogViewer/>
         </>
     );
