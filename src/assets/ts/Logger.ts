@@ -3,7 +3,8 @@ import {invoke} from "@tauri-apps/api/tauri";
 /**
  * Interface for the log message
  */
-export interface LogMessage {
+export interface LogMessage
+{
     id?: number;
     created?: Date;
     message: string;
@@ -11,14 +12,16 @@ export interface LogMessage {
     args: any[];
 }
 
-export enum LogType {
+export enum LogType
+{
     DEBUG,
     INFO,
     WARN,
     ERROR,
 }
 
-export interface LogHistoryRequest {
+export interface LogHistoryRequest
+{
     from?: Date,
     to?: Date,
     types?: LogType[]
@@ -26,8 +29,10 @@ export interface LogHistoryRequest {
     query?: string
 }
 
-function LogTypeToString(type: LogType): string {
-    switch (type) {
+function LogTypeToString(type: LogType): string
+{
+    switch (type)
+    {
         case LogType.DEBUG:
             return "DEBUG";
         case LogType.INFO:
@@ -39,12 +44,29 @@ function LogTypeToString(type: LogType): string {
     }
 }
 
-
-export default class Log {
+/**
+ * This is a Log class which performs logging related operations.
+ * This exported default class contains private static instance and originalConsole properties.
+ * The purpose of this class is to keep logs in an organized manner.
+ */
+export default class Log
+{
+    /**
+     * Establishes and maintains a single static instance of the log class.
+     */
     private static instance: Log;
+    /**
+     * An object that represents the original console in which logs were outputted.
+     * This is stored so that usual logging is not affected when the log class is used.
+     */
     private originalConsole: Console;
 
-    private constructor() {
+    /**
+     * A private constructor. This is used to restrict the instantiation of the Log class.
+     * Also, it assigns debug, info, warn, and error console methods to respective Log class static methods.
+     */
+    private constructor()
+    {
         this.originalConsole = {...console};
         console.log = Log.debug;
         console.debug = Log.debug;
@@ -53,20 +75,32 @@ export default class Log {
         console.error = Log.error;
     }
 
-    public static initialize() {
-        if (!Log.instance) Log.instance = new Log();
-        this.debug("Logger initialized");
+
+    /**
+     * Method to initialize the logger by creating its instance if not already created.
+     */
+    public static initialize()
+    {
+        if (!Log.instance)
+        {
+            Log.instance = new Log();
+            this.debug("Logger initialized");
+        }
     }
 
 
     /**
-     * Log a debug message
+     * Method to log a debug message, it takes string message and additional arguments.
+     * It logs to the console and invokes the 'log' function of the backend.
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static debug(message: string, ...args: any[]) {
-        try {
-            if (Log.instance.originalConsole === undefined) {
+    static debug(message: string, ...args: any[])
+    {
+        try
+        {
+            if (Log.instance.originalConsole === undefined)
+            {
                 setTimeout(() => Log.debug(message, ...args), 100);
                 return;
             }
@@ -76,19 +110,24 @@ export default class Log {
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
             invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
-        } catch {
+        } catch
+        {
             setTimeout(() => Log.debug(message, ...args), 100);
         }
     }
 
     /**
-     * Log an info message
+     * Method to log an information message, it takes string message and additional arguments.
+     * It logs to the console and invokes the 'log' function of the backend.
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static info(message: string, ...args: any[]) {
-        try {
-            if (Log.instance.originalConsole === undefined) {
+    static info(message: string, ...args: any[])
+    {
+        try
+        {
+            if (Log.instance.originalConsole === undefined)
+            {
                 setTimeout(() => Log.info(message, ...args), 100);
                 return;
             }
@@ -98,19 +137,24 @@ export default class Log {
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
             invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
-        } catch {
+        } catch
+        {
             setTimeout(() => Log.info(message, ...args), 100);
         }
     }
 
     /**
-     * Log a warning message
+     * Method to log a warning message, it takes string message and additional arguments.
+     * It logs to the console and invokes the 'log' function of the backend.
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static warn(message: string, ...args: any[]) {
-        try {
-            if (Log.instance.originalConsole === undefined) {
+    static warn(message: string, ...args: any[])
+    {
+        try
+        {
+            if (Log.instance.originalConsole === undefined)
+            {
                 setTimeout(() => Log.warn(message, ...args), 100);
                 return;
             }
@@ -120,19 +164,24 @@ export default class Log {
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
             invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
-        } catch {
+        } catch
+        {
             setTimeout(() => Log.warn(message, ...args), 100);
         }
     }
 
     /**
-     * Log an error message
+     * Method to log an error message, it takes string message and additional arguments.
+     * It logs to the console and invokes the 'log' function of the backend.
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static error(message: string, ...args: any[]) {
-        try {
-            if (Log.instance.originalConsole === undefined) {
+    static error(message: string, ...args: any[])
+    {
+        try
+        {
+            if (Log.instance.originalConsole === undefined)
+            {
                 setTimeout(() => Log.error(message, ...args), 100);
                 return;
             }
@@ -142,19 +191,22 @@ export default class Log {
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
             invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
-        } catch {
+        } catch
+        {
             setTimeout(() => Log.error(message, ...args), 100);
         }
     }
 
     /**
-     * Build the log message
+     * This is a private function that builds the log message. It formats the provided message and arguments into a LogMessage.
+     * It takes a string as a message, an array of arguments, and a type of log message.
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      * @param type - The type of the log message
      * @private
      */
-    private static buildMessage(message: string, args: any[], type: LogType): LogMessage {
+    private static buildMessage(message: string, args: any[], type: LogType): LogMessage
+    {
         // Get the indexes of the included arguments
         const includedIndexes: number[] = message.match(/{(\d+)}/g)?.map(i => parseInt(i.replace(/[{}]/g, ""))) ?? [];
 
@@ -164,7 +216,13 @@ export default class Log {
         return {message: `${message.replace(/{(\d+)}/g, (_, number) => `${JSON.stringify(args[number])}`)}`, type, args: notIncludedArgs};
     }
 
-    public static history(request?: LogHistoryRequest, callback?: (logs: LogMessage[]) => void) {
+    /**
+     * Method to get the history of logs. It takes as argument an optional request object and a callback function.
+     * @param request - The request object
+     * @param callback - The callback function
+     */
+    public static history(request?: LogHistoryRequest, callback?: (logs: LogMessage[]) => void)
+    {
         if (!request) request = {};
 
         const defaultStartDate = new Date();
@@ -181,8 +239,10 @@ export default class Log {
         if (!option.query || option.query === "") delete request.query;
 
         (invoke("get_log_history", option) as Promise<any[]>)
-            .then((response: any[]) => {
-                return response.map((log: any) => {
+            .then((response: any[]) =>
+            {
+                return response.map((log: any) =>
+                {
                     log.created = new Date(log.created);
                     log.type = log.log_type;
                     log.args = JSON.parse(log.args);
@@ -190,9 +250,39 @@ export default class Log {
                     return log;
                 }) as LogMessage[];
             })
-            .then((logs: LogMessage[]) => {
+            .then((logs: LogMessage[]) =>
+            {
                 if (callback) callback(logs);
             });
-
     }
+}
+
+/**
+ * Opens the log window in the application.
+ * This function makes a call to the Tauri backend to trigger the opening of a log window,
+ * allowing users to view log messages in a dedicated UI.
+ */
+export function openLogWindow()
+{
+    invoke("open_log_window");
+}
+
+/**
+ * Closes the log window in the application.
+ * This function communicates with the Tauri backend to close the log window,
+ * effectively hiding the log messages UI from the user.
+ */
+export function closeLogWindow()
+{
+    invoke("close_log_window");
+}
+
+/**
+ * Clears all log messages from the log storage.
+ * By invoking this function, all stored log messages are deleted from the backend,
+ * ensuring that the log window (if opened again) will start fresh without any old messages.
+ */
+export function clearLog()
+{
+    invoke("clear_log");
 }
