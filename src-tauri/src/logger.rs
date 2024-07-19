@@ -2,7 +2,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use sqlite::State;
-use tauri::Manager;
+use tauri::{LogicalSize, Manager, Size};
 use window_shadows::set_shadow;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -116,8 +116,6 @@ pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: 
 		Err(e) => Err(format!("Error creating log file: {}", e))
 	}
 }
-
-
 #[tauri::command]
 pub async fn open_log_window(handle: tauri::AppHandle) -> Result<(), String> {
 	if handle.get_window("logger").is_some() {
@@ -130,6 +128,9 @@ pub async fn open_log_window(handle: tauri::AppHandle) -> Result<(), String> {
 	).build().unwrap();
 	set_shadow(&window, true).unwrap();
 	window.set_decorations(false).unwrap();
+	window.set_minimizable(false).unwrap();
+	window.set_min_size(Some(Size::from(LogicalSize::new(530, 370)))).unwrap();
+	window.set_size(LogicalSize::new(600, 600)).unwrap();
 	window.show().unwrap();
 
 	Ok(())

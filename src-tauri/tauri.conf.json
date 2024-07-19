@@ -41,21 +41,6 @@
 				"titleBarStyle": "Overlay",
 				"hiddenTitle": true,
 				"visible": false
-			},
-			{
-				"label": "logger",
-				"alwaysOnTop": true,
-				"title": "Log Viewer",
-				"width": 600,
-				"height": 600,
-				"resizable": true,
-				"minWidth": 530,
-				"minHeight": 370,
-				"decorations": false,
-				"titleBarStyle": "Overlay",
-				"hiddenTitle": true,
-				"visible": false,
-				"url": "log-window.html"
 			}
 		],
 		"security": {
