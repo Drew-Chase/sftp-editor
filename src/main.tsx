@@ -31,9 +31,9 @@ ReactDOM.createRoot($("#root")[0]!).render(
 function PageContent()
 {
     // Initialize the singletons
+    Log.initialize();
     KeyboardShortcuts.instance;
     ConnectionManager.instance;
-    Log.initialize();
 
     // Disable the default right-click context menu
     $(document).on("contextmenu", (e) => e.preventDefault());
