@@ -1,6 +1,7 @@
 import {Button, Dropdown, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Kbd} from "@nextui-org/react";
 import {useNavigate} from "react-router-dom";
 import KeyboardShortcuts, {ModifierKey} from "../../assets/ts/KeyboardShortcuts.ts";
+import {openLogWindow} from "../../assets/ts/Logger.ts";
 
 export default function HelpMenuBarComponent()
 {
@@ -53,16 +54,16 @@ export default function HelpMenuBarComponent()
                 <DropdownItem
                     key={"view-logs"}
                     description={"view the logs for the app"}
-                    onClick={() => navigate("/logs")}
+                    onClick={() => openLogWindow()}
                     shortcut={<Kbd keys={["command", "shift"]}>L</Kbd>}
                 >
                     View Logs
                 </DropdownItem>
                 <DropdownItem
-                    key={"view-logs"}
+                    key={"view-shortcuts"}
                     description={"view the logs for the app"}
-                    onClick={() => navigate("/logs")}
-                    shortcut={<Kbd keys={["command", "shift"]}>L</Kbd>}
+                    // onClick={}
+                    shortcut={<Kbd keys={["command"]}>H</Kbd>}
                 >
                     Shortcuts
                 </DropdownItem>
