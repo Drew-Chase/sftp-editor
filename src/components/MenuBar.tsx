@@ -7,10 +7,31 @@ import "../assets/scss/chrome.scss";
 import SFTPEditorMenuBarComponent from "./MenuBar/SFTPEditorMenuBarComponent.tsx";
 import HelpMenuBarComponent from "./MenuBar/HelpMenuBarComponent.tsx";
 
+export interface ChromeActionOptions
+{
+    minimize?: boolean;
+    maximize?: boolean;
+    close?: boolean;
+    onMinimize?: (isCurrentlyMinimized: boolean) => void;
+    onMaximize?: (isCurrentlyMaximized: boolean) => void;
+    onClose?: () => void;
+}
 
-export default function MenuBar({title,hideMenu}: {title?:string, hideMenu?: boolean })
+const defaultActions: ChromeActionOptions = {
+    minimize: true,
+    maximize: true,
+    close: true,
+    onMinimize: () => WindowChrome.getInstance().toggleMinimize(),
+    onMaximize: (_: boolean) => WindowChrome.getInstance().toggleMaximize(),
+    onClose: () => WindowChrome.getInstance().close()
+};
+
+
+export default function MenuBar({title, hideMenu, actions}: { title?: string, hideMenu?: boolean, actions?: ChromeActionOptions })
 {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+    if (!actions) actions = defaultActions; // If no actions are provided, use the default actions
 
     return (
         <Navbar id={"window-chrome"} onMenuOpenChange={setIsMenuOpen} maxWidth={"full"} height={"32px"} classNames={{base: "m-0", wrapper: "px-0"}}>
@@ -28,9 +49,19 @@ export default function MenuBar({title,hideMenu}: {title?:string, hideMenu?: boo
             </NavbarContent>
             <NavbarContent id={"window-drag-bar"} className={"w-full bg-transparent hover:bg-foreground/10 transition-[background] rounded-md"} data-tauri-drag-region></NavbarContent>
             <NavbarContent id={"window-chrome-actions"} justify={"end"} className={"gap-0"}>
-                <NavbarItem className={"m-0"}> <Button variant={"light"} size={"sm"} className={"max-w-[24px] h-6"} onClick={() => WindowChrome.getInstance().toggleMinimize()}> <MinimizeIcon opacity={.5} size={12}/> </Button> </NavbarItem>
-                <NavbarItem className={"m-0"}> <Button variant={"light"} size={"sm"} className={"w-6 h-6"} onClick={() => WindowChrome.getInstance().toggleMaximize()}> <MaximizeIcon opacity={.5} size={12}/> </Button> </NavbarItem>
-                <NavbarItem className={"m-0"}> <Button variant={"light"} size={"sm"} color={"danger"} className={"w-6 h-6"} onClick={() => WindowChrome.getInstance().close()}> <XIcon opacity={.5} size={18}/> </Button> </NavbarItem>
+                <NavbarItem className={"m-0"} style={{display: actions.minimize ? "" : "none"}}>
+                    <Button variant={"light"} size={"sm"} className={"max-w-[24px] h-6"} onClick={() => actions.onMaximize!(WindowChrome.getInstance().isMinimized)}> <MinimizeIcon opacity={.5} size={12}/> </Button>
+                </NavbarItem>
+                <NavbarItem className={"m-0"} style={{display: actions.maximize ? "" : "none"}}>
+                    <Button variant={"light"} size={"sm"} className={"w-6 h-6"} onClick={() => actions.onMaximize!(WindowChrome.getInstance().isMaximized)}>
+                        <MaximizeIcon opacity={.5} size={12}/>
+                    </Button>
+                </NavbarItem>
+                <NavbarItem className={"m-0"} style={{display: actions.close ? "" : "none"}}>
+                    <Button variant={"light"} size={"sm"} color={"danger"} className={"w-6 h-6"} onClick={() => actions.onClose!()}>
+                        <XIcon opacity={.5} size={18}/>
+                    </Button>
+                </NavbarItem>
             </NavbarContent>
 
         </Navbar>
