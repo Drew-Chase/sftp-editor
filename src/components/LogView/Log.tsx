@@ -129,15 +129,17 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit}: {
                             >
                                 <>
                                     <span className={"opacity-70"}>Timestamp:</span> <span>{log.created?.toLocaleString()}</span>
-                                    {log.args.length === 0 ? <div>No additional data</div> : log.args.map((arg: any, index: number) =>
                                     {
-                                        const supportedTypes = ["number", "string", "boolean"];
-                                        return (
-                                            <div key={index} className={"text-xs"}>
-                                                {supportedTypes.includes(typeof arg) ? arg : <JsonHierarchyComponent key={log.id?.toString() ?? ""} content={arg}/>}
-                                            </div>
-                                        );
-                                    })}
+                                        log.args.length === 0 ? <div>No additional data</div> : log.args.map((arg: any, index: number) =>
+                                        {
+                                            const supportedTypes = ["number", "string", "boolean"];
+                                            return (
+                                                <div key={index} className={"text-xs"}>
+                                                    {supportedTypes.includes(typeof arg) ? arg : <JsonHierarchyComponent key={log.id?.toString() ?? ""} content={arg}/>}
+                                                </div>
+                                            );
+                                        })
+                                    }
                                 </>
                             </AccordionItem>
                         </Accordion>
