@@ -50,4 +50,16 @@ export default class WindowChrome
         }
         this.isMaximized = !this.isMaximized;
     }
+
+    public async maximize()
+    {
+        await appWindow.maximize();
+        this.isMaximized = true;
+    }
+
+    public async unmaximize()
+    {
+        await appWindow.unmaximize();
+        this.isMaximized = false;
+    }
 }
