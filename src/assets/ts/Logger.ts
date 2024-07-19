@@ -3,8 +3,7 @@ import {invoke} from "@tauri-apps/api/tauri";
 /**
  * Interface for the log message
  */
-export interface LogMessage
-{
+export interface LogMessage {
     id?: number;
     created?: Date;
     message: string;
@@ -12,16 +11,14 @@ export interface LogMessage
     args: any[];
 }
 
-export enum LogType
-{
+export enum LogType {
     DEBUG,
     INFO,
     WARN,
-    ERROR
+    ERROR,
 }
 
-export interface LogHistoryRequest
-{
+export interface LogHistoryRequest {
     from?: Date,
     to?: Date,
     types?: LogType[]
@@ -29,16 +26,36 @@ export interface LogHistoryRequest
     query?: string
 }
 
+function LogTypeToString(type: LogType): string {
+    switch (type) {
+        case LogType.DEBUG:
+            return "DEBUG";
+        case LogType.INFO:
+            return "INFO";
+        case LogType.WARN:
+            return "WARN";
+        case LogType.ERROR:
+            return "ERROR";
+    }
+}
 
-export default class Log
-{
-    public static initialize()
-    {
+
+export default class Log {
+    private static instance: Log;
+    private originalConsole: Console;
+
+    private constructor() {
+        this.originalConsole = {...console};
         console.log = Log.debug;
         console.debug = Log.debug;
         console.info = Log.info;
         console.warn = Log.warn;
         console.error = Log.error;
+    }
+
+    public static initialize() {
+        if (!Log.instance) Log.instance = new Log();
+        this.debug("Logger initialized");
     }
 
 
@@ -47,14 +64,21 @@ export default class Log
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static debug(message: string, ...args: any[])
-    {
-        const msg: LogMessage = Log.buildMessage(message, args, LogType.DEBUG);
-        // console.debug_old(`%c[${msg.type}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
+    static debug(message: string, ...args: any[]) {
+        try {
+            if (Log.instance.originalConsole === undefined) {
+                setTimeout(() => Log.debug(message, ...args), 100);
+                return;
+            }
+            const msg: LogMessage = Log.buildMessage(message, args, LogType.DEBUG);
+            Log.instance.originalConsole.debug(`%c[${LogTypeToString(msg.type)}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
-        // Invoke the log function in the Tauri backend
-        // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+            // Invoke the log function in the Tauri backend
+            // This is non-blocking and will not halt the application
+            invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+        } catch {
+            setTimeout(() => Log.debug(message, ...args), 100);
+        }
     }
 
     /**
@@ -62,14 +86,21 @@ export default class Log
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static info(message: string, ...args: any[])
-    {
-        const msg: LogMessage = Log.buildMessage(message, args, LogType.INFO);
-        // console.info_old(`%c[${msg.type}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
+    static info(message: string, ...args: any[]) {
+        try {
+            if (Log.instance.originalConsole === undefined) {
+                setTimeout(() => Log.info(message, ...args), 100);
+                return;
+            }
+            const msg: LogMessage = Log.buildMessage(message, args, LogType.INFO);
+            Log.instance.originalConsole.info(`%c[${LogTypeToString(msg.type)}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
-        // Invoke the log function in the Tauri backend
-        // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+            // Invoke the log function in the Tauri backend
+            // This is non-blocking and will not halt the application
+            invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+        } catch {
+            setTimeout(() => Log.info(message, ...args), 100);
+        }
     }
 
     /**
@@ -77,14 +108,21 @@ export default class Log
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static warn(message: string, ...args: any[])
-    {
-        const msg: LogMessage = Log.buildMessage(message, args, LogType.WARN);
-        // console.warn_old(`[${msg.type}] ${msg.message}`, ...msg.args);
+    static warn(message: string, ...args: any[]) {
+        try {
+            if (Log.instance.originalConsole === undefined) {
+                setTimeout(() => Log.warn(message, ...args), 100);
+                return;
+            }
+            const msg: LogMessage = Log.buildMessage(message, args, LogType.WARN);
+            Log.instance.originalConsole.warn(`[${LogTypeToString(msg.type)}] ${msg.message}`, ...msg.args);
 
-        // Invoke the log function in the Tauri backend
-        // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+            // Invoke the log function in the Tauri backend
+            // This is non-blocking and will not halt the application
+            invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+        } catch {
+            setTimeout(() => Log.warn(message, ...args), 100);
+        }
     }
 
     /**
@@ -92,14 +130,21 @@ export default class Log
      * @param message - The message to log
      * @param args - The arguments to replace in the message
      */
-    static error(message: string, ...args: any[])
-    {
-        const msg: LogMessage = Log.buildMessage(message, args, LogType.ERROR);
-        // console.error_old(`[${msg.type}] ${msg.message}`, ...msg.args);
+    static error(message: string, ...args: any[]) {
+        try {
+            if (Log.instance.originalConsole === undefined) {
+                setTimeout(() => Log.error(message, ...args), 100);
+                return;
+            }
+            const msg: LogMessage = Log.buildMessage(message, args, LogType.ERROR);
+            Log.instance.originalConsole.error(`[${LogTypeToString(msg.type)}] ${msg.message}`, ...msg.args);
 
-        // Invoke the log function in the Tauri backend
-        // This is non-blocking and will not halt the application
-        invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+            // Invoke the log function in the Tauri backend
+            // This is non-blocking and will not halt the application
+            invoke("log", {message: msg.message, logType: msg.type, arguments: JSON.stringify(msg.args)});
+        } catch {
+            setTimeout(() => Log.error(message, ...args), 100);
+        }
     }
 
     /**
@@ -109,8 +154,7 @@ export default class Log
      * @param type - The type of the log message
      * @private
      */
-    private static buildMessage(message: string, args: any[], type: LogType): LogMessage
-    {
+    private static buildMessage(message: string, args: any[], type: LogType): LogMessage {
         // Get the indexes of the included arguments
         const includedIndexes: number[] = message.match(/{(\d+)}/g)?.map(i => parseInt(i.replace(/[{}]/g, ""))) ?? [];
 
@@ -120,8 +164,7 @@ export default class Log
         return {message: `${message.replace(/{(\d+)}/g, (_, number) => `${JSON.stringify(args[number])}`)}`, type, args: notIncludedArgs};
     }
 
-    public static history(request?: LogHistoryRequest, callback?: (logs: LogMessage[]) => void)
-    {
+    public static history(request?: LogHistoryRequest, callback?: (logs: LogMessage[]) => void) {
         if (!request) request = {};
 
         const defaultStartDate = new Date();
@@ -138,10 +181,8 @@ export default class Log
         if (!option.query || option.query === "") delete request.query;
 
         (invoke("get_log_history", option) as Promise<any[]>)
-            .then((response: any[]) =>
-            {
-                return response.map((log: any) =>
-                {
+            .then((response: any[]) => {
+                return response.map((log: any) => {
                     log.created = new Date(log.created);
                     log.type = log.log_type;
                     log.args = JSON.parse(log.args);
@@ -149,8 +190,7 @@ export default class Log
                     return log;
                 }) as LogMessage[];
             })
-            .then((logs: LogMessage[]) =>
-            {
+            .then((logs: LogMessage[]) => {
                 if (callback) callback(logs);
             });
 
