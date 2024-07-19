@@ -9,7 +9,7 @@ use app_settings::{get_settings, save_settings};
 use connection_manager::{add_connection, delete_connection, get_connection_by_id, get_connections, initialize, set_default, update_connection, update_join};
 use sftp_manager::{list, send_ssh_command, test_connection};
 
-use crate::logger::{get_log_history, initialize_log_file, log};
+use crate::logger::{close_log_window, get_log_history, initialize_log_file, log, open_log_window};
 use crate::sftp_manager::download_file;
 
 // use crate::connection_manager::create_tmp_connection;
@@ -49,7 +49,9 @@ fn main() {
             send_ssh_command,
             download_file,
             log,
-            get_log_history
+            get_log_history,
+            open_log_window,
+            close_log_window
         ])
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
@@ -61,12 +63,6 @@ fn main() {
             set_shadow(&window, true).unwrap();
             window.set_decorations(false).unwrap();
             window.show().unwrap();
-            
-            let window = app.get_window("logger").unwrap();
-            set_shadow(&window, true).unwrap();
-            window.set_decorations(false).unwrap();
-            window.show().unwrap();
-
             Ok(())
         })
         .run(tauri::generate_context!())
