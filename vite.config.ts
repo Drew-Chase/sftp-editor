@@ -1,5 +1,6 @@
 import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react";
+import {TreeshakingOptions} from "rollup";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -29,7 +30,13 @@ export default defineConfig(async () => ({
             input: {
                 app: "index.html",
                 logview: "log-window.html"
-            }
+            },
+            treeshake: ({
+                preset: "recommended",
+                tryCatchDeoptimization: true,
+            } as TreeshakingOptions),
+            shimMissingExports: true
+
         }
     }
 }));
