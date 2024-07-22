@@ -41,3 +41,21 @@ kbd:has(kbd) {
     transition: max-width var(--transition, 1s) linear;
   }
 }
+
+#log-filter-panel {
+  transition: transform, opacity;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+
+  &.open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  &.closed {
+    transform: translateX(-50%);
+    opacity: 0;
+    pointer-events: none;
+  }
+}
