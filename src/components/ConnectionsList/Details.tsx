@@ -25,7 +25,7 @@ export default function Details(props: { connection: Connection })
     const [testingState, setTestingState] = useState(TestingState.Idle);
     const onSave = async () =>
     {
-        Log.debug("Saving connection: {0}", connection);
+        Log.debug("Saving connection", connection);
         await ConnectionManager.addConnection(connection);
         window.location.reload();
 
