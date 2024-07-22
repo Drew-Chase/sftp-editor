@@ -129,7 +129,7 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit, st
                                         })()
                                     }
                                     </div>
-                                    <p className={"pl-4 max-w-[calc(90vw_-_7rem)] truncate"}>{log.message}</p>
+                                    <p className={"pl-4 max-w-[calc(90vw_-_8rem)] truncate"}>{log.message}</p>
                                 </div>
                             }
                             >
