@@ -74,7 +74,7 @@ export default class ConnectionManager
         // Load the connections from the backend when the ConnectionManager is created.
         this.loadConnections().then((connections) =>
         {
-            Log.debug("Loading connections: {0}", connections.map(c => c.name));
+            Log.debug("Loading connections", connections);
         });
     }
 
@@ -99,7 +99,7 @@ export default class ConnectionManager
             Log.error(`Cannot update empty connection!`, connection);
             return;
         }
-        Log.info("Updating connection: {0}", connection.id);
+        Log.info("Updating connection", connection);
         await invoke("update_connection", {id: connection.id, connection: {...connection, protocol: connection.protocol}});
         await this.instance.loadConnections();
     }
@@ -115,7 +115,7 @@ export default class ConnectionManager
             Log.error(`Cannot update empty connection!`, connection);
             return;
         }
-        Log.info("Updating last connected time for connection: {0}", connection.id);
+        Log.info("Updating last connected time for connection", connection.id);
         await invoke("update_join", {id: connection.id});
         await this.instance.loadConnections();
     }
@@ -148,7 +148,7 @@ export default class ConnectionManager
             Log.error(`Cannot update empty connection!`, connection);
             return;
         }
-        Log.info("Setting default connection: {0}", connection.id);
+        Log.info("Setting default connection", connection);
         await invoke("set_default", {id: connection.id});
         await this.instance.loadConnections();
     }
@@ -164,7 +164,7 @@ export default class ConnectionManager
             Log.error(`Cannot remove empty connection!`, connection);
             return;
         }
-        Log.info("Removing connection: {0}", connection.id);
+        Log.info("Removing connection", connection);
         await invoke("delete_connection", {id: connection.id, connection: connection});
     }
 
@@ -201,9 +201,9 @@ export default class ConnectionManager
      */
     static async testConnection(connection: Connection): Promise<boolean>
     {
-        Log.info("Testing connection: ", connection.id);
+        Log.info("Testing connection", connection);
         const response: boolean = await invoke("test_connection", {options: {...connection, protocol: connection.protocol}});
-        Log.debug("Test connection response: ", response);
+        Log.debug("Test connection response", response);
         return response;
     }
 
@@ -213,15 +213,15 @@ export default class ConnectionManager
      */
     static async getConnectionById(id: number): Promise<Connection>
     {
-        Log.info("Getting connection by id: {0}", id);
+        Log.info("Getting connection by id", id);
         try
         {
             const connection: Connection = await invoke("get_connection_by_id", {id: id});
-            Log.debug("Connections: ", connection);
+            Log.debug("Found Connection with id of '{0}'", id, connection);
             return connection;
         } catch (e)
         {
-            Log.error(`Unable to get connection with id of ${id}\nError: `, e);
+            Log.error(`Unable to get connection with id of {0}\nError: `, id, e);
             return EmptyConnection;
         }
     }
