@@ -29,6 +29,7 @@ export interface GeneralSettings
     dark_mode: boolean;
     start_with_windows: boolean;
     panel_settings: PanelSettings;
+    log_window_always_on_top: boolean;
 }
 
 export interface AppSettings
@@ -40,6 +41,7 @@ export let currentSettings: AppSettings = {
     "general_settings": {
         "dark_mode": true,
         "start_with_windows": false,
+        "log_window_always_on_top": true,
         "panel_settings":
             {
                 "left":
