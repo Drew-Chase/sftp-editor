@@ -125,10 +125,16 @@ pub async fn open_log_window(handle: tauri::AppHandle) -> Result<(), String> {
 		&handle,
 		"logger",
 		tauri::WindowUrl::App("log-window.html".into())
-	).build().unwrap();
+	)
+		.transparent(true)
+		.resizable(true)
+		.title("Log Viewer")
+		.minimizable(false)
+		.decorations(false)
+		.always_on_top(true)
+		.focused(true)
+		.build().unwrap();
 	set_shadow(&window, true).unwrap();
-	window.set_decorations(false).unwrap();
-	window.set_minimizable(false).unwrap();
 	window.set_min_size(Some(Size::from(LogicalSize::new(530, 370)))).unwrap();
 	window.set_size(LogicalSize::new(600, 600)).unwrap();
 	window.show().unwrap();
