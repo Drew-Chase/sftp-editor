@@ -7,7 +7,7 @@ import {PauseIcon, PlayIcon} from "../Icons.tsx";
 
 let updateProgressbar: number;
 
-export default function Log({showDebug, showInfo, showWarn, showError, limit}: { showDebug: boolean, showInfo: boolean, showWarn: boolean, showError: boolean, limit: number })
+export default function Log({showDebug, showInfo, showWarn, showError, limit, startDate, endDate, search}: { showDebug: boolean, showInfo: boolean, showWarn: boolean, showError: boolean, limit: number, startDate: Date, endDate: Date, search: string | undefined })
 {
     const [logs, setLogs] = useState<LogMessage[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -32,13 +32,16 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit}: {
                 showWarn ? 2 : -1,
                 showError ? 3 : -1
             ].filter((type: number) => type !== -1) as LogType[],
-            limit: limit
+            limit: limit,
+            // from: startDate,
+            // to: endDate,
+            // query: search
         }, (logs: LogMessage[]) =>
         {
             setLogs(logs);
             setLoading(false);
-            if (!reloadPaused)
-                startProgressbar();
+            // if (!reloadPaused)
+            //     startProgressbar();
         });
     };
 
@@ -46,7 +49,7 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit}: {
     useEffect(() =>
     {
         reload();
-    }, [showDebug, showInfo, showWarn, showError, limit]);
+    }, [showDebug, showInfo, showWarn, showError, limit, startDate, endDate, search]);
 
 
     const startProgressbar = () =>
@@ -74,7 +77,7 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit}: {
 
 
     return (
-        <div id={"log-view"} className={"rounded-md w-[calc(100vw_-_4rem)] h-[calc(100vh_-_230px)] mt-4 dark:bg-[#101010] bg-[#ccc] overflow-y-auto"}>
+        <div id={"log-view"} className={"rounded-md w-[calc(100vw_-_4rem)] h-[calc(100vh_-_100px)] mt-4 dark:bg-[#101010] bg-[#ccc] overflow-y-auto"}>
 
             {loading && <Spinner size="lg" className={"w-full h-full"} label={"Loading Logs..."}/>}
             {!loading && logs.map((log: LogMessage) =>
@@ -106,31 +109,35 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit}: {
 
                             }
                         >
-                            <AccordionItem isCompact title={log.message} startContent={
-                                <div className={"font-light"}>{
-                                    (() =>
-                                    {
-                                        switch (log.type)
+                            <AccordionItem textValue={"fdasfads"} isCompact startContent={
+                                <div className={"flex flex-row"}>
+                                    <div className={"font-light"}>{
+                                        (() =>
                                         {
-                                            case 1:
-                                                return (<span>ℹ️ Info</span>);
-                                            case 2:
-                                                return (<span>⚠️ Warn</span>);
-                                            case 3:
-                                                return (<span>❌ Error</span>);
-                                            case 0:
-                                            default:
-                                                return (<span>Debug</span>);
-                                        }
-                                    })()
-                                }
+                                            switch (log.type)
+                                            {
+                                                case 1:
+                                                    return (<span>ℹ️ Info</span>);
+                                                case 2:
+                                                    return (<span>⚠️ Warn</span>);
+                                                case 3:
+                                                    return (<span>❌ Error</span>);
+                                                case 0:
+                                                default:
+                                                    return (<span>Debug</span>);
+                                            }
+                                        })()
+                                    }
+                                    </div>
+                                    <p className={"pl-4 max-w-[calc(90vw_-_7rem)] truncate"}>{log.message}</p>
                                 </div>
                             }
                             >
                                 <>
                                     <span className={"opacity-70"}>Timestamp:</span> <span>{log.created?.toLocaleString()}</span>
+                                    <p>{log.message}</p>
                                     {
-                                        log.args.length === 0 ? <div>No additional data</div> : log.args.map((arg: any, index: number) =>
+                                        log.args.length === 0 ? <div className={"opacity-70"}>No additional data</div> : log.args.map((arg: any, index: number) =>
                                         {
                                             const supportedTypes = ["number", "string", "boolean"];
                                             return (
