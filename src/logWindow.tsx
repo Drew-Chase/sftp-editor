@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {BrowserRouter} from "react-router-dom";
 import ReactDOM from "react-dom/client";
 import $ from "jquery";
@@ -9,7 +9,7 @@ import {GetSettings} from "./assets/ts/Settings.ts";
 import KeyboardShortcuts from "./assets/ts/KeyboardShortcuts.ts";
 import LogViewer from "./pages/LogViewer.tsx";
 import Log, {closeLogWindow} from "./assets/ts/Logger.ts";
-import MenuBar from "./components/MenuBar.tsx";
+import LogWindowMenuBar from "./components/LogView/LogWindowMenuBar.tsx";
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
@@ -32,15 +32,20 @@ function PageContent()
     // Disable the default right-click context menu
     $(document).on("contextmenu", (e) => e.preventDefault());
 
+    const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(true);
+
     return (
         <>
-            <MenuBar title={"Log Viewer"} hideMenu actions={{
+            <LogWindowMenuBar title={"Log Viewer"} onOpenFilters={() => setIsFiltersPanelOpen(!isFiltersPanelOpen)} actions={{
                 minimize: false,
                 maximize: false,
                 close: true,
-                onClose: () => {closeLogWindow()}
+                onClose: () =>
+                {
+                    closeLogWindow();
+                }
             }}/>
-            <LogViewer/>
+            <LogViewer isFiltersPanelOpen={isFiltersPanelOpen}/>
         </>
     );
 }
