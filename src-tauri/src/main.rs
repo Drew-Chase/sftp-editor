@@ -21,20 +21,21 @@ mod ssh_instance;
 mod logger;
 
 fn main() {
-    match initialize() {
-        Ok(_) => (),
-        Err(e) => {
-            println!("{}", e);
+	std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+	match initialize() {
+		Ok(_) => (),
+		Err(e) => {
+			println!("{}", e);
 
-            // exit with error code
-            std::process::exit(1);
-        }
-    }
+			// exit with error code
+			std::process::exit(1);
+		}
+	}
 
-    initialize_log_file();
+	initialize_log_file();
 
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
+	tauri::Builder::default()
+		.invoke_handler(tauri::generate_handler![
             get_settings,
             save_settings,
             get_connections,
@@ -53,24 +54,24 @@ fn main() {
             open_log_window,
             close_log_window
         ])
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
-        }))
-        .plugin(tauri_plugin_window_state::Builder::default().build())
-        .setup(|app| {
-            use window_shadows::set_shadow;
-            let window = app.get_window("main").unwrap();
-            set_shadow(&window, true).unwrap();
-            window.set_decorations(false).unwrap();
-            window.show().unwrap();
-            Ok(())
-        })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+		.plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+			app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
+		}))
+		.plugin(tauri_plugin_window_state::Builder::default().build())
+		.setup(|app| {
+			use window_shadows::set_shadow;
+			let window = app.get_window("main").unwrap();
+			set_shadow(&window, true).unwrap();
+			window.set_decorations(false).unwrap();
+			window.show().unwrap();
+			Ok(())
+		})
+		.run(tauri::generate_context!())
+		.expect("error while running tauri application");
 }
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
-    args: Vec<String>,
-    cwd: String,
+	args: Vec<String>,
+	cwd: String,
 }
