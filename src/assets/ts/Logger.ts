@@ -1,4 +1,5 @@
 import {invoke} from "@tauri-apps/api/tauri";
+import {GetSettings} from "./Settings.ts";
 
 /**
  * Interface for the log message
@@ -264,7 +265,7 @@ export default class Log
  */
 export function openLogWindow()
 {
-    invoke("open_log_window");
+    invoke("open_log_window", {alwaysOnTop: GetSettings().general_settings.log_window_always_on_top});
 }
 
 /**
