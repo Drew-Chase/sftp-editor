@@ -117,7 +117,7 @@ pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: 
 	}
 }
 #[tauri::command]
-pub async fn open_log_window(handle: tauri::AppHandle) -> Result<(), String> {
+pub async fn open_log_window(handle: tauri::AppHandle, always_on_top:bool) -> Result<(), String> {
 	if handle.get_window("logger").is_some() {
 		return Err("Log window is already open".to_string());
 	}
@@ -131,7 +131,7 @@ pub async fn open_log_window(handle: tauri::AppHandle) -> Result<(), String> {
 		.title("Log Viewer")
 		.minimizable(false)
 		.decorations(false)
-		.always_on_top(true)
+		.always_on_top(always_on_top)
 		.focused(true)
 		.build().unwrap();
 	set_shadow(&window, true).unwrap();
