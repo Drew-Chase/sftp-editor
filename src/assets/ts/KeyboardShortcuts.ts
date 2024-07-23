@@ -76,7 +76,7 @@ export default class KeyboardShortcuts
                         break;
                     }
                 }
-                if (!this.pressedKeys.includes(e.key) && e.key.length === 1)
+                if (!this.pressedKeys.includes(e.key) && e.key.length === 1 && this.shortcuts.some(s => s.key.includes(e.key)))
                 {
                     Log.debug("Key Pressed: {0}", e.key.toLowerCase());
                     this.pressedKeys.push(e.key.toLowerCase());
@@ -90,7 +90,7 @@ export default class KeyboardShortcuts
                 {
                     if (shortcut.key.includes(e.key) && shortcut.modifierKeys.every(modifier => this.pressedModifiers.includes(modifier)))
                     {
-                        Log.debug("Keyboard Shortcut Triggered: {0} + {1} - {2}", shortcut.modifierKeys.join(" + "), shortcut.key.join(" + "), shortcut.description || "No Description");
+                        Log.debug("Keyboard Shortcut Triggered: {0} + {1} - {2}", shortcut.modifierKeys.join(" + "), shortcut.key.join(" + "), shortcut.description || "No Description", shortcut);
                         shortcut.callback();
                     }
                 });
