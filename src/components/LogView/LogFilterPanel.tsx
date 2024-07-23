@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {Autocomplete, AutocompleteItem, Button, cn, DateRangePicker, Input, Switch} from "@nextui-org/react";
-import {parseZonedDateTime} from "@internationalized/date";
+import {DateDuration, getLocalTimeZone, parseZonedDateTime, today} from "@internationalized/date";
+import $ from "jquery";
 
 export interface LogFilter
 {
@@ -24,11 +25,11 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
     const [startDate, setStartDate] = useState(filter?.startDate ?? new Date());
     const [endDate, setEndDate] = useState(filter?.endDate ?? new Date());
     const [search, setSearch] = useState(filter?.search ?? "");
-    let hasValueChanged = true;
+    const [hasValueChanged, setHasValueChanged] = useState<boolean>(false);
 
     const applyFilter = () =>
     {
-        if (onFilterChange)
+        if (onFilterChange && hasValueChanged)
         {
             onFilterChange({
                 showDebug: showDebug,
@@ -40,15 +41,29 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
                 endDate: endDate,
                 search: search
             });
-            hasValueChanged = false;
+            setHasValueChanged(false);
         }
+        $("#log-panel-toggle").trigger("click");
     };
 
-    return (
-        <div id={"log-filter-panel"} className={`fixed top-0 left-0 w-full h-full backdrop-blur-sm z-[11] ${isOpen ? "open" : "closed"}`}>
+    $("#log-filter-panel-wrapper").on("click", e =>
+    {
+        const target = e.target as HTMLElement;
+        if (target.id === "log-filter-panel-wrapper")
+        {
+            applyFilter();
+        }
+    });
 
-            <div className={"bg-[hsla(0,5%,5%,100%)] w-[50%] min-w-[400px] max-w-[600px] h-[calc(100vh_-_4rem)] flex flex-col mt-[3rem] ml-[1rem] pl-4 pr-2 pb-[5rem] gap-3 overflow-y-scroll relative rounded-lg"}>
-                <Input label={"Search"} variant={"underlined"} value={search} onValueChange={setSearch}/>
+    return (
+        <div id={"log-filter-panel-wrapper"} className={`fixed top-0 left-0 w-full h-full backdrop-blur-sm z-[11] cursor-pointer ${isOpen ? "open" : "closed"}`}>
+
+            <div id={"log-filter-panel"} className={"dark:bg-[hsla(0,5%,5%,100%)] bg-[hsla(0,5%,90%,100%)] cursor-default w-[50%] min-w-[400px] max-w-[600px] h-[calc(100vh_-_4rem)] flex flex-col mt-[3rem] ml-[1rem] pl-4 pr-2 pb-[5rem] gap-3 overflow-y-scroll overflow-x-hidden relative rounded-lg"}>
+                <Input label={"Search"} variant={"underlined"} value={search} onValueChange={value =>
+                {
+                    setSearch(value);
+                    setHasValueChanged(true);
+                }}/>
 
                 <Autocomplete
                     label={"Limit"}
@@ -61,7 +76,7 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
                         if (limit && !isNaN(limit))
                         {
                             setLimit(limit);
-                            hasValueChanged = true;
+                            setHasValueChanged(true);
                         }
 
                     }}
@@ -71,6 +86,7 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
                         const limit = parseInt(value.toString());
                         if (limit && !isNaN(limit))
                             setLimit(limit);
+                        setHasValueChanged(true);
                     }}
                 >
                     <AutocompleteItem key={"10"}>10</AutocompleteItem>
@@ -82,7 +98,11 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
                 </Autocomplete>
                 <Switch
                     isSelected={showDebug}
-                    onValueChange={setShowDebug}
+                    onValueChange={value =>
+                    {
+                        setShowDebug(value);
+                        setHasValueChanged(true);
+                    }}
                     classNames={{
                         base: cn(
                             "inline-flex flex-row-reverse w-full max-w-full bg-content1 hover:bg-content2 items-center max-h-[6rem]",
@@ -104,7 +124,11 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
 
                 <Switch
                     isSelected={showInfo}
-                    onValueChange={setShowInfo}
+                    onValueChange={value =>
+                    {
+                        setShowInfo(value);
+                        setHasValueChanged(true);
+                    }}
                     classNames={{
                         base: cn(
                             "inline-flex flex-row-reverse w-full max-w-full bg-content1 hover:bg-content2 items-center max-h-[6rem]",
@@ -126,7 +150,11 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
 
                 <Switch
                     isSelected={showWarn}
-                    onValueChange={setShowWarn}
+                    onValueChange={value =>
+                    {
+                        setShowWarn(value);
+                        setHasValueChanged(true);
+                    }}
                     classNames={{
                         base: cn(
                             "inline-flex flex-row-reverse w-full max-w-full bg-content1 hover:bg-content2 items-center max-h-[6rem]",
@@ -148,7 +176,11 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
 
                 <Switch
                     isSelected={showError}
-                    onValueChange={setShowError}
+                    onValueChange={value =>
+                    {
+                        setShowError(value);
+                        setHasValueChanged(true);
+                    }}
                     classNames={{
                         base: cn(
                             "inline-flex flex-row-reverse w-full max-w-full bg-content1 hover:bg-content2 items-center max-h-[6rem]",
@@ -175,10 +207,12 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
                     classNames={{
                         base: "w-90"
                     }}
+                    maxValue={today(getLocalTimeZone()).add({days: 1} as DateDuration)}
                     onChange={value =>
                     {
                         setStartDate(value.start.toDate());
                         setEndDate(value.end.toDate());
+                        setHasValueChanged(true);
                     }}
                     defaultValue={(() =>
                     {
@@ -199,7 +233,7 @@ export default function LogFilterPanel({filter, isOpen, onFilterChange}: { filte
                         };
                     })()}
                 />
-                <Button className={"fixed bottom-[1.5rem] left-[1.5rem] min-w-[100px]"} style={{opacity: hasValueChanged ? "1" : "0", pointerEvents: hasValueChanged ? "all" : "none"}} color={"primary"} onClick={applyFilter}>Apply</Button>
+                <Button className={"fixed bottom-[1.5rem] left-[1.5rem] min-w-[100px] transition-opacity duration-200"} style={{opacity: hasValueChanged ? "1" : "0", pointerEvents: hasValueChanged ? "all" : "none"}} color={"primary"} onClick={applyFilter}>Apply</Button>
             </div>
 
 
