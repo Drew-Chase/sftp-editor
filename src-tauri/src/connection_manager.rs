@@ -60,22 +60,38 @@ pub fn initialize() -> Result<(), String> {
 
 	// Execute a CREATE TABLE SQL statement to ensure a table named 'connections' exists
 	// This table contains all necessary fields for storing connection information
+	// Here, we create a table named 'connections' in the SQLite database, if it doesn't already exist.
+	// This table has the following columns:
+	// id: An autoincrementing integer that serves as the primary key.
+	// name: A text field that stores a human-friendly name for the connection. This field is NOT NULL.
+	// host: A text field that stores the host name or IP address of the remote machine. This field is NOT NULL.
+	// port: An integer field that stores the port number for the connection. This field is NOT NULL.
+	// username: A text field that stores the username for the connection. This field is NOT NULL.
+	// password: A text field that stores the password for the connection. This field is NOT NULL.
+	// private_key: A text field that stores the private key content for SSH connections. This field is NOT NULL.
+	// remote_path: A text field that stores the remote path. This field is NOT NULL.
+	// local_path: A text field that stores the local path. This field is NOT NULL.
+	// default: A boolean field that checks if this is a default connection or not. This field is NOT NULL.
+	// protocol: A tiny int field that stores the protocol for the connection. 0 means SFTP, 1 means FTP. This field is NOT NULL and defaults to 0.
+	// created_at: A timestamp field that tracks the creation time of the connection. Defaults to the current timestamp.
+	// updated_at: A timestamp field that tracks the last update time. Defaults to the current timestamp.
+	// last_connected_at: A timestamp field that tracks the last connection attempt. Defaults to the current timestamp.  
 	match lite.execute(
 		"CREATE TABLE IF NOT EXISTS `connections` (
-                'id' INTEGER PRIMARY KEY AUTOINCREMENT,                     // Autoincrement ID
-                'name' TEXT NOT NULL,                                       // Human-friendly connection name
-                'host' TEXT NOT NULL,                                       // Host name or IP address of the remote machine
-                'port' INTEGER NOT NULL,                                    // Port number for the connection
-                'username' TEXT NOT NULL,                                   // Username for the connection
-                'password' TEXT NOT NULL,                                   // Password for the connection
-                'private_key' TEXT NOT NULL,                                // Private key content for SSH connection if applicable
-                'remote_path' TEXT NOT NULL,                                // Remote path that this connection should start at
-                'local_path' TEXT NOT NULL,                                 // Local path that this connection maps to
-                'default' BOOLEAN NOT NULL,                                 // Flag to check if it's a default connection
-                'protocol' TINYINT NOT NULL DEFAULT 0,                      // Protocol to use for the connection. 0 means SFTP, 1 means FTP
-                'created_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP,           // Timestamp of creation
-                'updated_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP,           // Timestamp of last update
-                'last_connected_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP     // Timestamp of last connection attempt
+        'id' INTEGER PRIMARY KEY AUTOINCREMENT,
+        'name' TEXT NOT NULL,
+        'host' TEXT NOT NULL,
+        'port' INTEGER NOT NULL,
+        'username' TEXT NOT NULL,
+        'password' TEXT NOT NULL,
+        'private_key' TEXT NOT NULL,
+        'remote_path' TEXT NOT NULL,
+        'local_path' TEXT NOT NULL,
+        'default' BOOLEAN NOT NULL,
+        'protocol' TINYINT NOT NULL DEFAULT 0,
+        'created_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        'updated_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        'last_connected_at' TIMESTAMP DEFAULT CURRENT_TIMESTAMP     
             )",
 	) {
 		Ok(_) => Ok(()),   // If the SQL statement executes successfully, return Ok
