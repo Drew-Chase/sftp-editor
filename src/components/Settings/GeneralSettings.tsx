@@ -3,6 +3,7 @@ import {AppSettings, ContentType, currentSettings, GetSettings, SaveSettings} fr
 import SwitchOption from "../SwitchSetting.tsx";
 import {applyTheme, Themes} from "../../assets/ts/Theme.ts";
 import {Select, SelectItem} from "@nextui-org/react";
+import {setLogWindowAlwaysOnTop} from "../../assets/ts/Logger.ts";
 
 export default function General()
 {
@@ -95,6 +96,7 @@ export default function General()
             {
                 SaveSettings({...settings, general_settings: {...settings?.general_settings, log_window_always_on_top: value}});
                 setSettings({...settings, general_settings: {...settings?.general_settings, log_window_always_on_top: value}});
+                setLogWindowAlwaysOnTop(value);
             }} selected={settings?.general_settings.log_window_always_on_top ?? false}/>
         </div>
     )
