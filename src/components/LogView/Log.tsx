@@ -35,7 +35,7 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit, st
             limit: limit,
             // from: startDate,
             // to: endDate,
-            // query: search
+            query: search
         }, (logs: LogMessage[]) =>
         {
             setLogs(logs);
