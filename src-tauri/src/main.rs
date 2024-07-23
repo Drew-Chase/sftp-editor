@@ -12,8 +12,6 @@ use sftp_manager::{list, send_ssh_command, test_connection};
 use crate::logger::{close_log_window, get_log_history, get_oldest_log_date, initialize_log_file, log, open_log_window, set_log_window_always_on_top};
 use crate::sftp_manager::download_file;
 
-// use crate::connection_manager::create_tmp_connection;
-
 mod app_settings;
 mod connection_manager;
 mod sftp_manager;
@@ -21,53 +19,60 @@ mod ssh_instance;
 mod logger;
 
 fn main() {
+	// Set an environmental variable for webkit
 	std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+
+	// Initialize the application, handle any occurring error and exit the process is initialization fails
 	match initialize() {
 		Ok(_) => (),
 		Err(e) => {
-			println!("{}", e);
-
-			// exit with error code
-			std::process::exit(1);
+			println!("{}", e); // Log out the error
+			std::process::exit(1); // Exit process with an error code
 		}
 	}
 
+	// Initialize the log file
 	initialize_log_file();
 
 	tauri::Builder::default()
+		// Set various invoke handlers that control the core functionality of the app 
 		.invoke_handler(tauri::generate_handler![
-            get_settings,
-            save_settings,
-            get_connections,
-            add_connection,
-            delete_connection,
-            update_connection,
-            update_join,
-            set_default,
-            test_connection,
-            list,
-            get_connection_by_id,
-            send_ssh_command,
-            download_file,
-            log,
-            get_log_history,
-            open_log_window,
-            close_log_window,
-			set_log_window_always_on_top,
-			get_oldest_log_date
+            get_settings,                                  // retrieves the applications settings
+			save_settings,                                 // persist the set application settings
+			get_connections,                               // get all connections in the application
+			add_connection,                                // add a new connection to the application
+			delete_connection,                             // remove a specific connection from the application using its ID
+			update_connection,                             // update a specific connection in the application using its ID
+			update_join,                                   // invoke an update join operation 
+			set_default,                                   // set a particular connection as the default
+			test_connection,                               // test a particular connection for validity
+			list,                                          // list the file/directory structure via SFTP on the connected server
+			get_connection_by_id,                          // retrieves a specific connection from the app using its ID
+			send_ssh_command,                              // send an SSH command to the connected server
+			download_file,                                 // triggers a download file operation from the connected server
+			log,                                           // log a new message in the application
+			get_log_history,                               // retrieves the history of logs in the application
+			open_log_window,                               // opens the window displaying the logs
+			close_log_window,                              // closes the window displaying the logs
+			set_log_window_always_on_top,                  // sets the log window to always appear on top of other windows
+			get_oldest_log_date                            // gets the date of the oldest log in the application
         ])
+		// Initialize and add a plugin to add single instance functionality
 		.plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-			app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
+			app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap(); // Emit the current active instance
 		}))
+		// Add a plugin to manage the window state
 		.plugin(tauri_plugin_window_state::Builder::default().build())
+		// Set up the app window and window properties
 		.setup(|app| {
-			use window_shadows::set_shadow;
-			let window = app.get_window("main").unwrap();
-			set_shadow(&window, true).unwrap();
-			window.set_decorations(false).unwrap();
-			window.show().unwrap();
+			use window_shadows::set_shadow; // Import method to set window shadow
+			let window = app.get_window("main").unwrap(); // Get the main app window
+			set_shadow(&window, true).unwrap(); // Set shadow
+			window.set_decorations(false).unwrap(); // Remove the window's default decoration
+			window.show().unwrap(); // Show the window
 			Ok(())
 		})
+		// Run the Tauri application with the generated context, and throw an error if it fails
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");
 }
