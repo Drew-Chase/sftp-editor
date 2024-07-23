@@ -234,10 +234,10 @@ export default class Log
             startDate: request.from?.toISOString() ?? defaultStartDate.toISOString().replace("T", " ").replace("Z", ""),
             logTypes: request.types ?? [LogType.DEBUG, LogType.INFO, LogType.WARN, LogType.ERROR],
             limit: request.limit ?? 100,
-            query: request.query
+            search: request.query
         };
 
-        if (!option.query || option.query === "") delete request.query;
+        if (!option.search || option.search === "") delete option.search;
 
         (invoke("get_log_history", option) as Promise<any[]>)
             .then((response: any[]) =>
@@ -254,6 +254,11 @@ export default class Log
             .then((logs: LogMessage[]) =>
             {
                 if (callback) callback(logs);
+            })
+            .catch((error: any) =>
+            {
+                Log.error("Error while fetching log history", error);
+                this.history({}, callback);
             });
     }
 }
@@ -269,6 +274,23 @@ export function openLogWindow()
 }
 
 /**
+ * Sets the log window to always be on top of other windows.
+ * This function communicates with the Tauri backend to set the log window to always be on top of other windows.
+ * @param alwaysOnTop - A boolean value that determines if the log window should always be on top of other windows.
+ */
+export function setLogWindowAlwaysOnTop(alwaysOnTop: boolean)
+{
+    try
+    {
+        invoke("set_log_window_always_on_top", {alwaysOnTop: alwaysOnTop});
+    } catch
+    {
+        // Throws error if the log window is not open
+        // This should be ignored.
+    }
+}
+
+/**
  * Closes the log window in the application.
  * This function communicates with the Tauri backend to close the log window,
  * effectively hiding the log messages UI from the user.
@@ -276,6 +298,16 @@ export function openLogWindow()
 export function closeLogWindow()
 {
     invoke("close_log_window");
+}
+
+/**
+ * Retrieves the oldest log message from the log storage.
+ * This function makes a call to the Tauri backend to retrieve the oldest log message stored in the log storage.
+ * @returns A promise that resolves to the date of the oldest log message.
+ */
+export async function getOldestLog(): Promise<Date>
+{
+    return new Date(await invoke("get_oldest_log"));
 }
 
 /**
