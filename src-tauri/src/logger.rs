@@ -26,7 +26,7 @@ pub struct LogMessage {
 /// # Errors
 /// Returns an Err if there are issues obtaining the LOG_FILE_PATH environment variable,
 /// opening the log file database, preparing or executing the SQL statement
-pub async fn log(message: &str, arguments: &str, log_type: i64) -> Result<(), String> {
+pub fn log(message: &str, arguments: &str, log_type: i64) -> Result<(), String> {
 	// Get log file path from environment variable
 	let log_file_path = std::env::var("LOG_FILE_PATH").map_err(|e| format!("Failed to get LOG_FILE_PATH environment variable: {}", e))?;
 
@@ -89,6 +89,10 @@ pub fn initialize_log_file() -> Result<(), String> {
 	match sqlite::open(file_path) {
 		// If the file was successfully opened or created proceed with the connection
 		Ok(connection) => {
+			match connection.execute("PRAGMA journal_mode=WAL;") {
+				Ok(_) => println!("WAL mode enabled."),
+				Err(_) => return Err("Failed to enable WAL mode".to_string())
+			}
 			// Execute an SQL command to create a new table for the logs if it doesn't exist
 			connection.execute("CREATE TABLE IF NOT EXISTS `logs` ('id' INTEGER PRIMARY KEY, 'type' TINYINT, 'message' TEXT, 'arguments' TEXT DEFAULT NULL, 'created' TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
 			          .map_err(|e| format!("Error creating log table: {}", e))?; // If the table creation failed, print an error message
@@ -127,7 +131,7 @@ pub fn initialize_log_file() -> Result<(), String> {
 /// assert!(result.is_ok());
 /// ```
 #[tauri::command]
-pub async fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: Vec<i8>, search: Option<&str>) -> Result<Vec<LogMessage>, String> {
+pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: Vec<i8>, search: Option<&str>) -> Result<Vec<LogMessage>, String> {
 
 	// Build SQL query string based on provided start_date, end_date, limit, log_types and search parameters
 	let mut query: String = format!("SELECT * FROM `logs` WHERE `created` BETWEEN '{}' AND '{}'", start_date, end_date);
