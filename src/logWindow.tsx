@@ -32,7 +32,7 @@ function PageContent()
     // Disable the default right-click context menu
     $(document).on("contextmenu", (e) => e.preventDefault());
 
-    const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(true);
+    const [isFiltersPanelOpen, setIsFiltersPanelOpen] = useState(false);
 
     return (
         <>
