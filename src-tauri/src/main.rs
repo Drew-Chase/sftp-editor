@@ -32,7 +32,10 @@ fn main() {
 	}
 
 	// Initialize the log file
-	initialize_log_file();
+	if initialize_log_file().is_err() {
+		println!("Failed to initialize log file");
+		std::process::exit(1);
+	}
 
 	tauri::Builder::default()
 		// Set various invoke handlers that control the core functionality of the app 
