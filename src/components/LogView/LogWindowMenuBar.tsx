@@ -33,7 +33,7 @@ export default function LogWindowMenuBar({title, onOpenFilters, actions}: { titl
         <Navbar id={"window-chrome"} maxWidth={"full"} height={"32px"} classNames={{base: "m-0", wrapper: "px-0"}}>
             <NavbarContent id={"window-menu-bar"} className={!title ? "hidden" : ""}>
                 <NavbarItem>
-                    <Button variant={"light"} className={"ml-1 mt-1"} onClick={onOpenFilters}>{title}</Button>
+                    <Button id={"log-panel-toggle"} variant={"light"} className={"ml-1 mt-1"} onClick={onOpenFilters}>{title}</Button>
                 </NavbarItem>
             </NavbarContent>
             <NavbarContent id={"window-drag-bar"} className={"w-full bg-transparent hover:bg-foreground/10 transition-[background] rounded-md"} data-tauri-drag-region></NavbarContent>
