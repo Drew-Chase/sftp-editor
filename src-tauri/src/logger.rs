@@ -69,7 +69,7 @@ pub async fn log(message: &str, arguments: &str, log_type: i64) -> Result<(), St
 /// ```
 /// initialize_log_file();
 /// ```
-pub fn initialize_log_file() {
+pub fn initialize_log_file() -> Result<(), String> {
 	// Define the name of the log database file
 	let file_name = "sftp-editor-client-log.db";
 
@@ -90,14 +90,12 @@ pub fn initialize_log_file() {
 		// If the file was successfully opened or created proceed with the connection
 		Ok(connection) => {
 			// Execute an SQL command to create a new table for the logs if it doesn't exist
-			if let Err(e) = connection.execute("CREATE TABLE IF NOT EXISTS `logs` ('id' INTEGER PRIMARY KEY, 'type' TINYINT, 'message' TEXT, 'arguments' TEXT DEFAULT NULL, 'created' TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
-			{
-				// Print an error message if the SQL command execution failed
-				eprintln!("Error creating log table: {}", e);
-			}
+			connection.execute("CREATE TABLE IF NOT EXISTS `logs` ('id' INTEGER PRIMARY KEY, 'type' TINYINT, 'message' TEXT, 'arguments' TEXT DEFAULT NULL, 'created' TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
+			          .map_err(|e| format!("Error creating log table: {}", e))?; // If the table creation failed, print an error message
+			Ok(())
 		}
 		// If the file opening/creation failed, print an error message
-		Err(e) => eprintln!("Error creating log file: {}", e)
+		Err(e) => Err(format!("Error creating log file: {}", e))
 	}
 }
 
@@ -151,7 +149,7 @@ pub async fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_t
 	// add order by and limit clause to the SQL query string
 	query.push_str(format!(" ORDER BY `created` DESC LIMIT {}", limit).as_str());
 
-	println!("{}", query);
+	println!("{}", query); // Output the query for debugging purposes
 
 	// Open the log file
 	match sqlite::open(std::env::var("LOG_FILE_PATH").unwrap_or_else(|_| return "Failed to get LOG_FILE_PATH environment variable.".to_string())) {
