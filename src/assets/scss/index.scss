@@ -42,11 +42,10 @@ kbd:has(kbd) {
   }
 }
 
-#log-filter-panel {
+#log-filter-panel-wrapper {
   transition: transform, opacity;
   transition-duration: 0.2s;
   transition-timing-function: ease-in-out;
-
   &.open {
     transform: translateX(0);
     opacity: 1;
