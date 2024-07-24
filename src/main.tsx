@@ -13,7 +13,6 @@ import {GetSettings} from "./assets/ts/Settings.ts";
 import ConnectionsList from "./pages/ConnectionsList.tsx";
 import KeyboardShortcuts from "./assets/ts/KeyboardShortcuts.ts";
 import ConnectionManager from "./assets/ts/ConnectionManager.ts";
-import LogViewer from "./pages/LogViewer.tsx";
 import Log from "./assets/ts/Logger.ts";
 
 await GetSettings();
@@ -30,6 +29,7 @@ ReactDOM.createRoot($("#root")[0]!).render(
 
 function PageContent()
 {
+
     // Initialize the singletons
     Log.initialize();
     KeyboardShortcuts.instance;
@@ -66,7 +66,6 @@ function PageContent()
                         <Route path="/site-browser/:id?" element={<ConnectionsList/>}/>
                         <Route path="/connection/:id" element={<Browser/>}/>
                         <Route path="/settings/:tab?" element={<Settings/>}/>
-                        <Route path="/logs" element={<LogViewer/>}/>
                     </Route>
                 </Routes>
             </NextUIProvider>
