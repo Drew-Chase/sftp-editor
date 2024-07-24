@@ -29,7 +29,16 @@ export interface GeneralSettings
     dark_mode: boolean;
     start_with_windows: boolean;
     panel_settings: PanelSettings;
+    log_settings: LogSettings;
+}
+
+export interface LogSettings
+{
     log_window_always_on_top: boolean;
+    dont_keep_older_than?: Date;
+    in_memory_logging: boolean;
+    log_file_path?: string;
+
 }
 
 export interface AppSettings
@@ -41,7 +50,10 @@ export let currentSettings: AppSettings = {
     "general_settings": {
         "dark_mode": true,
         "start_with_windows": false,
-        "log_window_always_on_top": true,
+        "log_settings": {
+            "log_window_always_on_top": true,
+            "in_memory_logging": false
+        },
         "panel_settings":
             {
                 "left":
