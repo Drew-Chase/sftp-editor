@@ -106,7 +106,8 @@ export default class Log
                 return;
             }
             const msg: LogMessage = Log.buildMessage(message, args, LogType.DEBUG);
-            Log.instance.originalConsole.debug(`%c[${LogTypeToString(msg.type)}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
+            if (Log.instance.originalConsole.debug !== this.debug) // Prevents redundant logging and possible infinite loops
+                Log.instance.originalConsole.debug(`%c[${LogTypeToString(msg.type)}] ${msg.message}`, "background: transparent; color: #bada55; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
@@ -133,7 +134,8 @@ export default class Log
                 return;
             }
             const msg: LogMessage = Log.buildMessage(message, args, LogType.INFO);
-            Log.instance.originalConsole.info(`%c[${LogTypeToString(msg.type)}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
+            if (Log.instance.originalConsole.info !== this.info) // Prevents redundant logging and possible infinite loops
+                Log.instance.originalConsole.info(`%c[${LogTypeToString(msg.type)}] ${msg.message}`, "background: #303f62; color: #45a1ff; font-size: 12px; padding: 2px 5px; border-radius: 5px;", ...msg.args);
 
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
@@ -160,7 +162,8 @@ export default class Log
                 return;
             }
             const msg: LogMessage = Log.buildMessage(message, args, LogType.WARN);
-            Log.instance.originalConsole.warn(`[${LogTypeToString(msg.type)}] ${msg.message}`, ...msg.args);
+            if (Log.instance.originalConsole.warn !== this.warn) // Prevents redundant logging and possible infinite loops
+                Log.instance.originalConsole.warn(`[${LogTypeToString(msg.type)}] ${msg.message}`, ...msg.args);
 
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
@@ -179,6 +182,7 @@ export default class Log
      */
     static error(message: string, ...args: any[])
     {
+        // const callingFuntion = new Error().stack?.split("\n")[2].trim().replace("at ", "");
         try
         {
             if (Log.instance.originalConsole === undefined)
@@ -187,7 +191,8 @@ export default class Log
                 return;
             }
             const msg: LogMessage = Log.buildMessage(message, args, LogType.ERROR);
-            Log.instance.originalConsole.error(`[${LogTypeToString(msg.type)}] ${msg.message}`, ...msg.args);
+            if (Log.instance.originalConsole.error !== this.error) // Prevents redundant logging and possible infinite loops
+                Log.instance.originalConsole.error(`[${LogTypeToString(msg.type)}] ${msg.message}`, ...msg.args);
 
             // Invoke the log function in the Tauri backend
             // This is non-blocking and will not halt the application
@@ -270,7 +275,7 @@ export default class Log
  */
 export function openLogWindow()
 {
-    invoke("open_log_window", {alwaysOnTop: GetSettings().general_settings.log_window_always_on_top});
+    invoke("open_log_window", {alwaysOnTop: GetSettings().general_settings.log_settings.log_window_always_on_top});
 }
 
 /**
