@@ -9,23 +9,17 @@ export default function JsonHierarchyComponent({key, content}: { key: string, co
             {
                 keys.map((k: string) =>
                 {
-                    // let body = content[k];
-                    if (k === "")
-                    {
-                        k = Date.now().toString();
-                    }
-
                     return (
                         <AccordionItem
                             startContent={<div className={"text-medium inline-flex"}>
                                 <span className={"font-bold pr-2"}>{k}</span>
-                                <div className={"truncate max-w-[200px] opacity-70"}>{content[k]}</div>
+                                <div className={"truncate max-w-[200px] opacity-70"}>{Array.isArray(content) ? "Array" : content[k]}</div>
                             </div>
                             }>
                             {
                                 supportedTypes.includes(typeof content[k]) ?
                                     <span className={"text-medium pl-4"}>
-                                    <span className={"font-bold pr-2"}>{k}:</span> {content[k]}
+                                    <span className={"font-bold pr-2"}>{k}:</span> {Array.isArray(content) ? "Array" : content[k]}
                                 </span> :
                                     <JsonHierarchyComponent key={`${key}-${k}`} content={content[k]}/>
                             }
