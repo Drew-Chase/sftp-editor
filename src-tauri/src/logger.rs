@@ -89,10 +89,6 @@ pub fn initialize_log_file() -> Result<(), String> {
 	match sqlite::open(file_path) {
 		// If the file was successfully opened or created proceed with the connection
 		Ok(connection) => {
-			match connection.execute("PRAGMA journal_mode=WAL;") {
-				Ok(_) => println!("WAL mode enabled."),
-				Err(_) => return Err("Failed to enable WAL mode".to_string())
-			}
 			// Execute an SQL command to create a new table for the logs if it doesn't exist
 			connection.execute("CREATE TABLE IF NOT EXISTS `logs` ('id' INTEGER PRIMARY KEY, 'type' TINYINT, 'message' TEXT, 'arguments' TEXT DEFAULT NULL, 'created' TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
 			          .map_err(|e| format!("Error creating log table: {}", e))?; // If the table creation failed, print an error message
@@ -180,6 +176,10 @@ pub fn get_log_history(start_date: &str, end_date: &str, limit: i32, log_types: 
 								},
 								_ => {}
 							}
+						}
+						if state == State::Done
+						{
+							break;
 						}
 					}
 					// Return the vector of LogMessages
@@ -373,5 +373,56 @@ pub fn close_log_window(handle: tauri::AppHandle) -> Result<(), String> {
 		},
 		// If it doesn't, return an error message
 		None => Err("Log window is not open".to_string())
+	}
+}
+
+
+/// Clears the log by deleting all entries from the `logs` table in the database.
+///
+/// # Safety
+///
+/// This function assumes the presence of a valid `LOG_FILE_PATH` environment variable
+/// which specifies the path to the log file.
+///
+/// # Errors
+///
+/// This function may fail if:
+/// - The `LOG_FILE_PATH` environment variable is not set or inaccessible.
+/// - Opening the log file fails.
+/// - Preparing the SQL statement fails.
+/// - Moving the statement cursor to the next row fails.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// clear_log();
+/// ```
+#[tauri::command]
+pub fn clear_log(){
+	// Open the log file
+	match sqlite::open(std::env::var("LOG_FILE_PATH").unwrap_or_else(|_| return "Failed to get LOG_FILE_PATH environment variable.".to_string())) {
+		Ok(conn) => {
+			// Prepare the SQL statement
+			match conn.prepare("DELETE FROM `logs`") {
+				Ok(mut statement) => {
+					// Execute the statement
+					loop {
+						match statement.next() {
+							Ok(state) => {
+								if state == State::Done {
+									break;
+								}
+							},
+							Err(e) => {
+								println!("Failed to move statement cursor to the next row: {}", e);
+								break;
+							}
+						}
+					}
+				},
+				Err(e) => println!("Failed to prepare log statement: {}", e)
+			}
+		},
+		Err(e) => println!("Failed to open log file: {}", e)
 	}
 }
