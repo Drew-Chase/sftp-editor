@@ -235,12 +235,16 @@ export default class Log
         defaultStartDate.setDate(defaultStartDate.getDate() - 1); // Default to 1 day ago
 
         const option = {
-            endDate: request.to?.toISOString() ?? new Date().toISOString().replace("T", " ").replace("Z", ""),
-            startDate: request.from?.toISOString() ?? defaultStartDate.toISOString().replace("T", " ").replace("Z", ""),
+            endDate: request.to?.toISOString() ?? new Date().toISOString(),
+            startDate: request.from?.toISOString() ?? defaultStartDate.toISOString(),
             logTypes: request.types ?? [LogType.DEBUG, LogType.INFO, LogType.WARN, LogType.ERROR],
             limit: request.limit ?? 100,
             search: request.query
         };
+
+        // Convert the dates to a format that the backend can understand
+        option.startDate = option.startDate.replace("T", " ").replace("Z", "").substring(0, option.startDate.lastIndexOf("."));
+        option.endDate = option.endDate.replace("T", " ").replace("Z", "").substring(0, option.endDate.lastIndexOf("."));
 
         if (!option.search || option.search === "") delete option.search;
 
