@@ -94,10 +94,11 @@ export default function General()
             </div>
             <SwitchOption label={"Log Window Always On Top"} description={"Should the log window be always on top or not?"} onToggle={async value =>
             {
-                SaveSettings({...settings, general_settings: {...settings?.general_settings, log_window_always_on_top: value}});
-                setSettings({...settings, general_settings: {...settings?.general_settings, log_window_always_on_top: value}});
+                const newSettings = {...settings, general_settings: {...settings?.general_settings, log_settings: {...settings?.general_settings.log_settings, log_window_always_on_top: value}}};
+                SaveSettings(newSettings);
+                setSettings(newSettings);
                 setLogWindowAlwaysOnTop(value);
-            }} selected={settings?.general_settings.log_window_always_on_top ?? false}/>
+            }} selected={settings?.general_settings.log_settings.log_window_always_on_top ?? false}/>
         </div>
     )
         ;
