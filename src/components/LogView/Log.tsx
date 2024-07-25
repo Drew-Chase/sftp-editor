@@ -33,15 +33,15 @@ export default function Log({showDebug, showInfo, showWarn, showError, limit, st
                 showError ? 3 : -1
             ].filter((type: number) => type !== -1) as LogType[],
             limit: limit,
-            // from: startDate,
-            // to: endDate,
+            from: startDate,
+            to: endDate,
             query: search
         }, (logs: LogMessage[]) =>
         {
             setLogs(logs);
             setLoading(false);
-            // if (!reloadPaused)
-            //     startProgressbar();
+            if (!reloadPaused)
+                startProgressbar();
         });
     };
 
